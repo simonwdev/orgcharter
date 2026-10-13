@@ -12,7 +12,7 @@
   --marine:#1C5C86; --marine-soft:#DCE9F2; --amber:#B8730F; --amber-soft:#FBEBD1;
   --fern:#2B7A58; --fern-soft:#DCEFE5; --rose:#A8364B; --rose-soft:#F7DDE1;
   /* Role families, kept clear of the status colours: amber open seat, green starting, red leaving. */
-  --f-lead:#172129; --f-dev:#2F6DB5; --f-test:#7451B8; --f-po:#B03A82; --f-ux:#1F8585; --f-arch:#5B6B7A; --f-other:#9FAEB8;
+  --f-lead:#172129; --f-dev:#2F6DB5; --f-test:#7451B8; --f-po:#B03A82; --f-pm:#7D2860; --f-ux:#1F8585; --f-arch:#5B6B7A; --f-other:#9FAEB8;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -20,13 +20,13 @@
   --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
   --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
   --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
-  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
 }}
 :root[data-theme="dark"]{
   --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
   --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
   --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
-  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -178,11 +178,6 @@ body.famspot .card.hit{box-shadow:0 0 0 3px var(--role)}   /* spotlighting a rol
 .fcol .mono{background:var(--fc);color:var(--fci,var(--panel))}
 .fcol .undo{font:inherit;font-size:.75rem;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 .2rem}
 .fcol .undo:hover{color:var(--marine)}
-.fbar{display:flex;flex:1 1 100%;order:3;height:9px;border-radius:3px;overflow:hidden;background:var(--panel);margin:.1rem 0 .05rem}
-.fbar button{display:block;height:100%;min-width:3px;border:0;padding:0;background:var(--fc);cursor:pointer}
-.fbar button+button{box-shadow:inset 1.5px 0 var(--team)}
-.fbar button.on{box-shadow:inset 0 0 0 2px var(--ink)}
-.fbar:hover{height:12px}
 .fkey{display:flex;flex-wrap:wrap;gap:.1rem .5rem;padding:0 .5rem .4rem;font-size:11px;color:var(--ink-2)}
 .fkey i{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;background:var(--fc);margin-right:.25rem;vertical-align:-.05em}
 #rolekey{position:absolute;left:12px;bottom:12px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;max-width:calc(100% - 300px);padding:.25rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;cursor:default}
@@ -194,7 +189,7 @@ body.famspot .card.hit{box-shadow:0 0 0 3px var(--role)}   /* spotlighting a rol
 #rolekey .rkedit{font:inherit;font-size:.78rem;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:.1rem .4rem}
 #rolekey .rkedit:hover{color:var(--marine)}
 @media (max-width:700px){ #rolekey{max-width:calc(100% - 24px);bottom:56px} }
-.fam-lead{--fc:var(--f-lead)} .fam-dev{--fc:var(--f-dev)} .fam-test{--fc:var(--f-test)} .fam-po{--fc:var(--f-po)} .fam-ux{--fc:var(--f-ux)} .fam-arch{--fc:var(--f-arch)} .fam-other{--fc:var(--f-other)}
+.fam-lead{--fc:var(--f-lead)} .fam-dev{--fc:var(--f-dev)} .fam-test{--fc:var(--f-test)} .fam-po{--fc:var(--f-po)} .fam-pm{--fc:var(--f-pm)} .fam-ux{--fc:var(--f-ux)} .fam-arch{--fc:var(--f-arch)} .fam-other{--fc:var(--f-other)}
 #fdlg{width:min(40rem,94vw)}
 #fdlg .ftbl{max-height:42vh;overflow:auto;border:1px solid var(--rule);border-radius:6px;margin:.6rem 0 .2rem}
 #fdlg table{font-size:.86rem}
@@ -227,6 +222,11 @@ body.famspot .card.hit{box-shadow:0 0 0 3px var(--role)}   /* spotlighting a rol
 #skpanel{position:absolute;right:12px;top:12px;width:272px;max-height:calc(100% - 84px);overflow:auto;z-index:4;padding:.6rem .7rem .7rem;font-size:.82rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:default}
 #skpanel h4{margin:0;font:600 .98rem "Source Serif 4",Georgia,serif}
 #skpanel .sub2{color:var(--ink-2)}
+#skpanel .hc{display:flex;align-items:center;gap:.65rem;margin:.55rem 0 .15rem;padding:.4rem .65rem;border:1px solid var(--rule);border-radius:6px}
+#skpanel .hc b{font:600 1.55rem "Source Serif 4",Georgia,serif;font-variant-numeric:tabular-nums;line-height:1}
+#skpanel .span{font-size:.84rem;color:var(--ink-2);margin:.25rem 0 0}
+#skpanel .span.over{color:var(--rose);font-weight:600}
+#skpanel .hc span{color:var(--ink-2);font-size:.84rem;line-height:1.35}
 #skpanel .hlabel{font-size:.72rem;color:var(--ink-2);margin:.5rem 0 .2rem}
 #skpanel .hgroup{display:flex;flex-wrap:wrap;gap:.25rem}
 #skpanel .chip{font-size:.76rem;padding:.08rem .45rem}
@@ -321,6 +321,13 @@ dialog label{display:block;font-size:.88rem;color:var(--ink-2);margin-bottom:.55
 dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
 dialog input[type=text],dialog input[type=date]{display:block;width:100%;font:inherit;padding:.4rem .5rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);margin-top:.15rem}
 dialog label.chk{display:flex;gap:.4rem;align-items:center}
+.mlist{max-height:50vh;overflow:auto;border:1px solid var(--rule);border-radius:4px;background:var(--paper)}
+.mlist button{display:block;width:100%;text-align:left;font:inherit;padding:.4rem .6rem;border:0;border-bottom:1px solid var(--rule);background:none;color:var(--ink);cursor:pointer}
+.mlist button:last-child{border-bottom:0}
+.mlist button:hover,.mlist button:focus-visible{background:var(--panel);outline:0}
+.mlist .t{font-weight:600}
+.mlist small{color:var(--ink-2);margin-left:.45rem}
+.mlist p{padding:.6rem}
 .drow{display:flex;flex-direction:row-reverse;gap:.5rem;margin-top:.8rem}
 
 /* hero: stacked headcount bars per stream */
@@ -351,6 +358,7 @@ td.dim{color:var(--rule)}
 .card.vac .tag.vac{background:var(--panel)}
 .tag.nz{background:var(--fern-soft);color:var(--fern)}
 .tag.gap{background:var(--rose-soft);color:var(--rose)}
+.tag.over{background:var(--rose-soft);color:var(--rose);font-weight:600}
 .tag.move{background:var(--marine-soft);color:var(--marine)}
 .tag.loc{background:var(--paper);color:var(--ink-2)}
 .kpis{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin:.5rem 0 1rem}
@@ -467,6 +475,8 @@ td.dim{color:var(--rule)}
         <button class="tb" id="addseat" title="Add a seat under this">+ Person</button>
         <button class="tb" id="addteam" title="Add a team under this">+ Team</button>
         <button class="tb" id="convert"></button>
+        <button class="tb" id="movesel" title="Move under another person or team (M)">Move to…</button>
+        <button class="tb" id="dup" title="Duplicate, placed just after the original (Ctrl+D)">Duplicate</button>
         <select class="tb" id="sortsel" aria-label="Sort this group" title="Sort this team, or this person's reports">
           <option value="">Sort…</option>
           <option value="title">By title, then name</option>
@@ -485,7 +495,7 @@ td.dim{color:var(--rule)}
         <div><b>Scroll</b> or <b>right-drag</b> to pan, <b>Ctrl+scroll</b> to zoom</div>
         <div><b>Click</b> or <b>right-click</b> a card for its actions</div>
         <div><b>Ctrl+click</b>, or <b>drag a box</b> over empty space, to select several · <b>Ctrl+A</b> all (or all highlighted) · <b>Esc</b> clear</div>
-        <div><b>Enter</b> edit · <b>Delete</b> remove · <b>Ctrl+Z / Y</b> undo, redo · <b>0</b> fit</div>
+        <div><b>Enter</b> edit · <b>M</b> move to · <b>Ctrl+D</b> duplicate · <b>Delete</b> remove · <b>Ctrl+Z / Y</b> undo, redo · <b>0</b> fit</div>
       </div>
       <div id="rolekey" role="group" aria-label="Role groups: click one to spotlight it"></div>
       <div id="zoombox">
@@ -628,6 +638,14 @@ td.dim{color:var(--rule)}
     <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button></div>
   </form>
 </dialog>
+<dialog id="mdlg">
+  <form method="dialog" id="mform">
+    <h3 id="mdh"></h3>
+    <label>Move under <input type="text" name="mq" placeholder="Search people and teams" autocomplete="off"></label>
+    <div class="mlist" id="mlist"></div>
+    <div class="drow"><button class="btn quiet" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
 <dialog id="dlg">
   <form method="dialog" id="dform">
     <h3 id="dh"></h3>
@@ -692,9 +710,11 @@ const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov',
 const fmtDate=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return d+' '+MONTHS[m-1]+(y!==new Date().getFullYear()?' '+y:''); };
 const NEW_DAYS=30;   // someone counts as a new starter until this many days after their start date
 const isVacant=n=>/yes/i.test(n.hiring)||VOCAB.vacant.test(n.person);
-const roleName=t=>t.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s*\[.*?\]\s*/g,' ').replace(/\s+\d+(?:\.\d+)?%?\s*$/,'').replace(/\s+/g,' ').trim();
+// Strips bracketed asides, nested ones too: "Product Manager (Product Owner (Design))" is a Product Manager.
+const noParens=t=>{ let s=t; while(/\([^()]*\)/.test(s)) s=s.replace(/\s*\([^()]*\)\s*/g,' '); return s; };
+const roleName=t=>noParens(t).replace(/\s*\[.*?\]\s*/g,' ').replace(/\s+\d+(?:\.\d+)?%?\s*$/,'').replace(/\s+/g,' ').trim();
 const headName=t=>{ const m=t.match(/\[(.+?)\]/); if(m) return m[1].trim();
-  return t.replace(/\(.*?\)/g,'').replace(/\b(product delivery lead|lead|leader|director of|head of|director|head)\b/gi,'').replace(/\s+/g,' ').trim() || t; };
+  return noParens(t).replace(/\b(product delivery lead|lead|leader|director of|head of|director|head)\b/gi,'').replace(/\s+/g,' ').trim() || t; };
 const sibs=(doc,pid)=>pid?doc.nodes[pid].kids:doc.roots;
 function walk(doc,fn){ const go=(id,d)=>{ const n=doc.nodes[id]; fn(n,d); n.kids.forEach(k=>go(k,d+1)); }; doc.roots.forEach(r=>go(r,0)); }
 
@@ -1005,12 +1025,14 @@ const SHOW_KEY=STORE+'.show', SHOW={title:true,badge:true,loc:true,tags:true,ski
 try{ Object.assign(SHOW,JSON.parse(localStorage.getItem(SHOW_KEY)||'{}')); }catch(e){}
 // Role groups: every role falls in one of a few groups, each with a fixed colour, so a colour means the same thing on
 // every chart. The group comes from words in the role (first match wins, so "Quality Lead" is a lead and "Test &
-// Automation Engineer" is test), unless this browser has an override for that role (View > Role groups).
+// Automation Engineer" is test; a "Head of" or a product manager is not a lead), unless this browser has an override
+// for that role (View > Role groups).
 const FAMS=[
-  {k:'lead',label:'Lead',mono:'LEAD',re:/\b(lead|leader|head|director|chief|cto|cio|cpo|vp|manager|em(\s*\d+)?)\b/i},
+  {k:'lead',label:'Lead',mono:'LEAD',re:/\b(lead|leader|head(?!\s+of\b)|director|chief|cto|cio|cpo|vp|(?<!product\s)manager|em(\s*\d+)?)\b/i},
+  {k:'pm',label:'Product Manager',mono:'PM',re:/\bproduct managers?\b/i},
   {k:'arch',label:'Architecture',mono:'ARCH',re:/architect/i},
   {k:'test',label:'Test',mono:'TEST',re:/\b(test\w*|qa|quality)\b/i},
-  {k:'po',label:'Product',mono:'PO',re:/\b(product owner|product manager|business analyst|po|ba)\b/i},
+  {k:'po',label:'Product',mono:'PO',re:/\b(product owner|business analyst|po|ba)\b/i},
   {k:'ux',label:'Design',mono:'UX',re:/\b(ux|ui|design\w*|research\w*)\b/i},
   {k:'dev',label:'Developer',mono:'DEV',re:/\b(develop\w*|engineer\w*|programmer|devops|sre)\b/i},
   {k:'other',label:'Other',mono:'',re:null}];
@@ -1041,13 +1063,6 @@ function roleColors(P){
   const color={}; roles.forEach(r=>{ color[r]=`var(--f-${famOf(r)})`; });
   return {roles,color,lead};
 }
-// A stacked bar of the role groups among some people, one segment per group; clicking a segment spotlights that group.
-function famBar(ps){
-  const c={}; ps.forEach(p=>{ c[p.family]=(c[p.family]||0)+1; }); const ks=FAMS.filter(f=>c[f.k]);
-  if(!ks.length) return '';
-  return `<div class="fbar" role="group" aria-label="Role groups: ${ks.map(f=>c[f.k]+' '+f.label).join(', ')}">`+ks.map(f=>{ const roles={};
-    ps.forEach(p=>{ if(p.family===f.k) roles[p.roleName]=(roles[p.roleName]||0)+1; });
-    return `<button class="fam-${f.k}${F.sel.family.has(f.label)?' on':''}" style="flex:${c[f.k]}" data-dim="family" data-val="${f.label}" title="${f.label} ${c[f.k]}: ${esc(Object.entries(roles).map(([r,n])=>r+' '+n).join(', '))}. Click to spotlight."></button>`; }).join('')+'</div>'; }
 
 /* ---------- state ---------- */
 const S={many:new Set(),showDiff:true,plan:null,doc:null,ref:{},skills:null,SK:{by:{},missing:[]},D:null,colors:null,undo:[],redo:[],sel:null,collapsed:new Set(),tab:'chart',headDirty:true,view:'org'};
@@ -1144,6 +1159,23 @@ function updateBar(){
 // With a person selected the panel lists their skills; with a team selected, the skills held across that team.
 // Any skill in it can be clicked to highlight everyone who has it. "Edit skills" turns a person's list into tick boxes,
 // and stays on as you click from person to person.
+// Span of control: a manager is flagged above 8 direct reports, a team above 10 members (the Scrum Guide's "10 or fewer").
+// Direct reports include the people in teams under the manager; a team's members are the people in it and in teams
+// within it, not the people who report to one of them. Open seats count, since they are planned headcount.
+const SPAN_MAX={seat:8,team:10};
+function directSeats(n){ const N=S.doc.nodes, out=[]; (function go(x){ x.kids.forEach(k=>{ if(N[k].type==='team') go(N[k]); else out.push(k); }); })(n); return out; }
+const spanInfo=n=>{ const t=n.type==='team', c=directSeats(n).length, max=SPAN_MAX[t?'team':'seat'];
+  return {c,max,over:c>max,what:t?(c===1?'member':'members'):(c===1?'direct report':'direct reports')}; };
+const spanTag=n=>{ const s=spanInfo(n); return s.over?`<span class="tag over" title="${s.c} ${s.what}; the usual guideline is ${s.max} or fewer">${s.c} ${n.type==='team'?'members':'reports'}</span>`:''; };
+const spanLine=n=>{ const s=spanInfo(n); return s.c?`<div class="span${s.over?' over':''}">${s.c} ${s.what}${s.over?` · over the guideline of ${s.max}`:''}</div>`:''; };
+// Seats under the given nodes (and the seats themselves, with self), each counted once, split into filled and vacant.
+function headcount(ids,self){
+  const N=S.doc.nodes, seen=new Set(), go=id=>N[id].kids.forEach(k=>{ if(N[k].type!=='team') seen.add(k); go(k); });
+  ids.forEach(id=>{ if(self&&N[id].type!=='team') seen.add(id); go(id); });
+  const vac=[...seen].filter(id=>isVacant(N[id])).length;
+  return {all:seen.size,vac,ppl:seen.size-vac};
+}
+const hcBlock=(h,what)=>`<div class="hc"><b>${h.all}</b><span>${what}<br>${h.ppl} filled · ${h.vac} vacant</span></div>`;
 function renderPanel(){
   const el=$('#skpanel'), n=S.doc&&S.sel&&S.doc.nodes[S.sel];
   el.classList.toggle('hidden',!n); if(!n) return;
@@ -1155,12 +1187,13 @@ function renderPanel(){
   if(n.type==='team'){
     const seats=[]; (function go(x){ x.kids.forEach(k=>{ const p=S.D.info[k]; if(p&&!p.vacant) seats.push(p); go(S.doc.nodes[k]); }); })(n);
     const c={}; seats.forEach(p=>p.skills.forEach(k=>{ c[k]=(c[k]||0)+1; }));
-    html=`<h4>${esc(n.title||'(unnamed team)')}</h4><div class="sub2">${seats.length} people · skills held in this team</div>`+
+    html=`<h4>${esc(n.title||'(unnamed team)')}</h4>${hcBlock(headcount([n.id]),'headcount, including teams within it')}${spanLine(n)}<div class="hlabel">Skills held in this team</div>`+
       (skillGroups().map(g=>block(g,Object.keys(c).filter(k=>G[k]===g).sort((a,b)=>c[b]-c[a]||a.localeCompare(b)).map(k=>chip(k,` <b>${c[k]}</b>`)).join(''))).join('')||'<div class="hlabel">No skills recorded.</div>');
   }else{
     const rows=S.SK.by[n.id]||[], has={}; rows.forEach(r=>{ has[r.skill]=r; });
     const mine=S.D.info[n.id].tags, low=mine.map(t=>t.toLowerCase());
-    html=`<h4>${esc(n.person||'(no name)')}</h4><div class="sub2">${esc(n.title)}</div><div class="hlabel">Tags</div><div class="hgroup">`+
+    const hc=headcount([n.id]);
+    html=`<h4>${esc(n.person||'(no name)')}</h4><div class="sub2">${esc(n.title)}</div>${hc.all?hcBlock(hc,'in their reporting line')+spanLine(n):''}<div class="hlabel">Tags</div><div class="hgroup">`+
       mine.map(t=>tagChip(t,` <button class="x" data-untag="${esc(t)}" title="Remove this tag" aria-label="Remove tag ${esc(t)}">×</button>`)).join('')+
       Object.keys(S.tagc).filter(t=>!low.includes(t.toLowerCase())).map(t=>`<button class="chip" data-addtag="${esc(t)}" title="Add this tag">+ ${esc(t)}</button>`).join('')+
       `</div><input type="text" id="tagq" placeholder="New tag, then Enter" aria-label="New tag">`+xfPanel(n.id);
@@ -1328,6 +1361,8 @@ function placeSel(){
   const n=S.doc&&S.sel&&S.doc.nodes[S.sel], show=!!n&&S.tab==='chart'&&!drag, m=isMulti();
   selbar.classList.toggle('hidden',!show);
   ['#addseat','#addteam','#sortsel','#convert'].forEach(s=>$(s).classList.toggle('hidden',m||S.view==='logical'));   // reporting-line edits
+  $('#movesel').classList.toggle('hidden',S.view==='logical');
+  if(show) $('#dup').classList.toggle('hidden',S.view==='logical'||!selSeats().length);
   if(show&&!m){ const t=n.type==='team', c=$('#convert');
     c.textContent=t?'→ Person':'→ Team';
     c.title=t?'Turn this team into a person, so it is drawn as a card with what is under it as reports':'Turn this person into a team, with their reports as its members'; }
@@ -1359,7 +1394,7 @@ function renderMulti(el){
   const ids=selSeats(), n=ids.length, teams=S.many.size-n, info=S.D.info, G=S.skills.groups, tc={}, sc={};
   ids.forEach(id=>{ info[id].tags.forEach(t=>{ tc[t]=(tc[t]||0)+1; }); (info[id].skills||[]).forEach(k=>{ sc[k]=(sc[k]||0)+1; }); });
   const chip=(attr,k,c)=>`<button class="chip${c===n?' on':c?' part':''}" ${attr}="${esc(k)}" title="${c===n?'All of them have it: click to remove it from all':c?`${c} of ${n} have it: click to give it to all`:'Click to give it to all'}">${esc(k)}${c?` <b>${c}/${n}</b>`:''}</button>`;
-  let html=`<h4>${S.many.size} selected</h4><div class="sub2">${n} seat${n===1?'':'s'}${teams?` · ${teams} team${teams>1?'s':''}, which tags and skills leave alone`:''}</div>`;
+  let html=`<h4>${S.many.size} selected</h4><div class="sub2">${n} seat${n===1?'':'s'}${teams?` · ${teams} team${teams>1?'s':''}, which tags and skills leave alone`:''}</div>${hcBlock(headcount([...S.many].filter(id=>S.doc.nodes[id]),true),'headcount, including everyone under them')}`;
   if(n){
     html+=`<div class="hlabel">Tags</div><div class="hgroup">${Object.keys(S.tagc).map(t=>chip('data-mtag',t,tc[t]||0)).join('')}</div>`+
       '<input type="text" id="mtagq" placeholder="New tag for all of them, then Enter" aria-label="New tag for all selected">';
@@ -1442,7 +1477,7 @@ function renderRoleKey(){
 function filtersChanged(){ renderHL(); renderChart(); placeSel(); renderPanel(); if(S.tab==='people') renderPeople(); }
 document.addEventListener('click',e=>{
   const ch=e.target.closest('[data-dim],[data-q]'); if(e.target.closest('[data-mode]')){ F.all=!F.all; return filtersChanged(); }
-  if(!ch||!ch.closest('#hlchips,.picks,.pfpop,#skpanel,.fbar,#rolekey')) return;
+  if(!ch||!ch.closest('#hlchips,.picks,.pfpop,#skpanel,#rolekey')) return;
   if(ch.dataset.q){ F.q=F.rawq=''; }
   else{ const sel=F.sel[ch.dataset.dim], v=ch.dataset.val; sel.has(v)?sel.delete(v):sel.add(v); }
   filtersChanged();
@@ -1517,7 +1552,7 @@ function renderLogical(){
     const body=ms.map(member).join('')+gone.map(left).join('');
     return `<div class="team xteam${pure&&hits<2?' cov'+hits:''}" data-xteam="${esc(t.name)}"><div class="thead">`+
       `<span class="tn">${esc(t.name)}</span><button class="xe" data-xedit="${esc(t.name)}" title="Rename, regroup or delete this team" aria-label="Edit ${esc(t.name)}">✎</button>${tog(key)}`+
-      `${diff}${tag}<span class="tc">${ppl.length} ${ppl.length===1?'person':'people'} · ${fmtFte(fte(ms,vac))} FTE${open?' + '+open+' open':''}</span>${famBar(ppl.map(r=>info[r.id]))}</div>`+
+      `${diff}${tag}<span class="tc">${ppl.length} ${ppl.length===1?'person':'people'} · ${fmtFte(fte(ms,vac))} FTE${open?' + '+open+' open':''}</span></div>`+
       (mix&&!S.collapsed.has(key)?`<div class="fkey">${mix}</div>`:'')+
       (t.purpose&&!S.collapsed.has(key)?`<div class="xp">${esc(t.purpose)}</div>`:'')+
       (S.collapsed.has(key)?'':`<div class="tbody">${body||'<div class="empty">Drop people here</div>'}</div>`)+'</div>'; };
@@ -1526,7 +1561,7 @@ function renderLogical(){
   x.teams.forEach(t=>{ if(!t.group) return out.push(column(t)); if(seen.has(t.group)) return; seen.add(t.group);
     const ts=x.teams.filter(u=>u.group===t.group), ids=new Set(ts.flatMap(u=>(by[u.name]||[]).map(r=>r.id))), key='xg:'+t.group;
     const f=fte(ts.flatMap(u=>by[u.name]||[]),r=>info[r.id].vacant);
-    out.push(`<div class="team group"><div class="thead"><span class="tn">${esc(t.group)}</span>${tog(key)}<span class="tc">${ts.length} team${ts.length>1?'s':''} · ${[...ids].filter(id=>!info[id].vacant).length} people · ${fmtFte(f)} FTE</span>${famBar([...ids].map(id=>info[id]).filter(p=>!p.vacant))}</div>`+
+    out.push(`<div class="team group"><div class="thead"><span class="tn">${esc(t.group)}</span>${tog(key)}<span class="tc">${ts.length} team${ts.length>1?'s':''} · ${[...ids].filter(id=>!info[id].vacant).length} people · ${fmtFte(f)} FTE</span></div>`+
       (S.collapsed.has(key)?'':`<div class="gbody">${ts.map(column).join('')}<button class="tb xadd" data-xadd="${esc(t.group)}" title="Add a team to ${esc(t.group)}">+ Team</button></div>`)+'</div>'); });
   out.push(x.teams.length?'<button class="tb xadd" data-xadd="" title="Add a cross-functional team">+ Cross-functional team</button>'
     :'<div class="xintro"><b>No cross-functional teams yet.</b><br>Add one, then drag people into it from the list of everyone not in a team. Each person can be in several teams, with a share of their time in each. The teams are saved in the workbook alongside the chart, separately for each scenario.<br><button class="tb" data-xadd="">+ Cross-functional team</button></div>');
@@ -1554,7 +1589,7 @@ function renderChart(){
     return `<div class="card ghostc${n?'':' gone'}" title="${tm?'This team':'This seat'} was here in the baseline">`+
       `<div class="nm">${esc(tm?o.title||'(unnamed team)':o.person||'(no name)')}</div><div class="ti">${esc(tm?'Team':o.title)}</div>`+
       `<div class="meta">${n?`<span class="tag move">→ ${esc(placeName(d,id))}</span>`:'<span class="tag gap">Removed</span>'}</div></div>`; };
-  const card=(n,axis)=>seatCard(n,axis,{flag:flag(n),tog:tog(n),mv:X&&movedIn(n)});
+  const card=(n,axis)=>seatCard(n,axis,{flag:spanTag(n)+flag(n),tog:tog(n),mv:X&&movedIn(n)});
   // Against the baseline: the headcount if it changed, and skills the team loses, is down to one holder of, or gains.
   const teamDiff=n=>{ if(!X||!X.B.nodes[n.id]) return '';
     const a=X.agg(X.B,n.id), b=X.agg(d,n.id), t=[];
@@ -1572,7 +1607,7 @@ function renderChart(){
     const tag=cov?`<span class="tag ${hits?'vac':'gap'}" title="People in this team matching the highlight">${hits} of ${seats.length-vac}${stay<hits?` · ${stay} staying`:''}</span>`:hits?`<span class="tag vac" title="Highlighted in this team">${hits}</span>`:'';
     const items=S.collapsed.has(n.id)?[]:kidsOf(n.id,n.kids), grp=isGroup(n);
     return `<div class="team${grp?' group':''}${S.many.has(n.id)?' sel':''}${pure&&hits<2?' cov'+hits:''}" data-team="${esc(n.id)}"><div class="thead" data-id="${esc(n.id)}" data-axis="${axis}">`+
-      `<span class="tn">${esc(n.title||'(unnamed team)')}</span>${flag(n)}${tag}${teamDiff(n)}<span class="tc">${seats.length-vac}${vac?' + '+vac+' vacant':''}</span>${tog(n)}${famBar(seats.filter(p=>!p.vacant))}</div>`+
+      `<span class="tn">${esc(n.title||'(unnamed team)')}</span>${spanTag(n)}${flag(n)}${tag}${teamDiff(n)}<span class="tc">${seats.length-vac}${vac?' + '+vac+' vacant':''}</span>${tog(n)}</div>`+
       (S.collapsed.has(n.id)?'':grp?`<div class="gbody">${columns(items).join('')}</div>`
         :`<div class="tbody">${items.map(x=>x.k?list(N[x.k]):ghost(x.g)).join('')||'<div class="empty">Drop people here</div>'}</div>`)+'</div>'; };
   // A team holding a lead (someone with reports) is a group, such as a stream: its contents are laid out like the chart
@@ -1845,6 +1880,40 @@ function delSel(){
   ask(team?'Delete team?':'Delete seat?',`${name} will be removed from the chart.`+(k?` Its ${k} direct ${team?'member':'report'}${k>1?'s':''} will move up ${where}.`:'')+' You can undo this.','Delete',
     ()=>commit(()=>{ remove(S.doc,n.id); setSel([]); }));
 }
+// Copies each selected person (not their reports) in beside the original, keeping their skills and cross-functional teams.
+function dupSel(){
+  const ids=selSeats(); if(!ids.length||S.view==='logical') return;
+  commit(()=>{ const taken=takenIds(), out=[];
+    ids.forEach(id=>{ const o=S.doc.nodes[id], nid=newId(S.doc,taken), to=sibs(S.doc,o.sup);
+      S.doc.nodes[nid]={...o,id:nid,extra:{...o.extra},kids:[]}; to.splice(to.indexOf(id)+1,0,nid);
+      S.skills.rows.filter(r=>r.id===id).forEach(r=>S.skills.rows.push({...r,id:nid}));
+      S.doc.xf.rows.filter(r=>r.id===id).forEach(r=>S.doc.xf.rows.push({...r,id:nid}));
+      out.push(nid); });
+    setSel(out); });
+}
+// Moves the selection under a person or team picked from a searchable list. Anything selected along with
+// something above it travels with that, so the selection keeps its shape.
+const mdlg=$('#mdlg'), mlist=$('#mlist'), mq=$('#mform').mq;
+const nodeLabel=n=>n.type==='team'?(n.title||'(unnamed team)'):(n.person||n.title||'(no name)');
+function moveSel(){
+  if(S.view==='logical') return;
+  const sel=selIds().filter(id=>S.doc.nodes[id]); if(!sel.length) return;
+  const order=[], walk=id=>{ order.push(id); S.doc.nodes[id].kids.forEach(walk); }; S.doc.roots.forEach(walk);
+  const ids=order.filter(id=>sel.includes(id)&&!sel.some(s=>s!==id&&isUnder(S.doc,id,s)));
+  const targets=order.filter(id=>!ids.some(s=>isUnder(S.doc,id,s)));
+  const draw=()=>{ const q=mq.value.trim().toLowerCase();
+    const hits=targets.filter(id=>{ const n=S.doc.nodes[id]; return !q||[n.type==='team'?'':n.person,n.title].some(v=>(v||'').toLowerCase().includes(q)); }).slice(0,300);
+    mlist.innerHTML=hits.map(id=>{ const n=S.doc.nodes[id], up=S.doc.nodes[n.sup], team=n.type==='team';
+      const info=[team?'team':n.person?n.title:'', up&&'in '+nodeLabel(up)].filter(Boolean).join(' · ');
+      return `<button type="button" data-to="${esc(id)}"><span${team?' class="t"':''}>${esc(nodeLabel(n))}</span><small>${esc(info)}</small></button>`; }).join('')
+      ||'<p>Nothing matches.</p>'; };
+  const go=to=>{ mdlg.close(); commit(()=>{ ids.forEach(id=>move(S.doc,id,to)); S.collapsed.delete(to); setSel(sel); }); };
+  $('#mdh').textContent='Move '+(ids.length>1?ids.length+' items':nodeLabel(S.doc.nodes[ids[0]]));
+  mq.value=''; mq.oninput=draw; draw();
+  mq.onkeydown=e=>{ if(e.key!=='Enter') return; e.preventDefault(); const b=mlist.querySelector('[data-to]'); if(b) go(b.dataset.to); };
+  mlist.onclick=e=>{ const b=e.target.closest('[data-to]'); if(b) go(b.dataset.to); };
+  mdlg.returnValue=''; mdlg.showModal(); mq.focus();
+}
 function sortSel(key){
   const n=S.doc.nodes[S.sel]; if(!n||!key) return;
   // A person without reports stands for the group they sit in.
@@ -1866,6 +1935,8 @@ function convertSel(){
 $('#convert').onclick=convertSel;
 $('#edit').onclick=openEdit;
 $('#del').onclick=delSel;
+$('#dup').onclick=dupSel;
+$('#movesel').onclick=moveSel;
 $('#sortsel').onchange=e=>{ const k=e.target.value; e.target.value=''; sortSel(k); };
 document.querySelectorAll('[data-sortall]').forEach(b=>b.onclick=()=>commit(()=>sortKids(S.doc,'',b.dataset.sortall,true)));
 $('#collapse').onclick=()=>{
@@ -1888,14 +1959,16 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape') closePops();
   if(e.key==='Control'&&drag){ setCopy(true); return updateDrag(drag.cx,drag.cy); }
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&S.doc){ e.preventDefault(); saveBook(e.shiftKey); return; }
-  if(!S.doc||dlg.open||cdlg.open||sdlg.open||xdlg.open||fdlg.open||$('#ndlg').open||$('#scdlg').open||/^(input|select|textarea)$/i.test(e.target.tagName)) return;
+  if(!S.doc||dlg.open||cdlg.open||sdlg.open||xdlg.open||fdlg.open||$('#ndlg').open||$('#scdlg').open||mdlg.open||/^(input|select|textarea)$/i.test(e.target.tagName)) return;
   const mod=e.ctrlKey||e.metaKey, k=e.key.toLowerCase();
   if(mod&&k==='z'){ e.preventDefault(); e.shiftKey?step(S.redo,S.undo):step(S.undo,S.redo); }
   else if(mod&&k==='y'){ e.preventDefault(); step(S.redo,S.undo); }
   else if(mod&&k==='a'&&S.tab==='chart'){ e.preventDefault(); selectAll(); }
+  else if(mod&&k==='d'&&S.tab==='chart'){ e.preventDefault(); dupSel(); }
   else if(mod||S.tab!=='chart') return;
   else if(k==='escape'){ if(S.sel) select(null); }
   else if(k==='delete'||k==='backspace') delSel();
+  else if(k==='m'){ if(S.sel){ e.preventDefault(); moveSel(); } }
   else if(k==='enter'||k==='f2'){ if(S.sel){ e.preventDefault(); openEdit(); } }
   else if(k==='+'||k==='=') zoomMid(1.25);
   else if(k==='-') zoomMid(.8);
