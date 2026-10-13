@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Orgcharter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDF1F3; --panel:#FFFFFF; --ink:#172129; --ink-2:#4A5963; --rule:#CBD4DA; --line:#9FAEB8; --team:#E3E9ED;
+  --marine:#1C5C86; --marine-soft:#DCE9F2; --amber:#B8730F; --amber-soft:#FBEBD1;
+  --fern:#2B7A58; --fern-soft:#DCEFE5; --rose:#A8364B; --rose-soft:#F7DDE1;
+  /* Role families, kept clear of the status colours: amber open seat, green starting, red leaving. */
+  --f-lead:#172129; --f-dev:#2F6DB5; --f-test:#7451B8; --f-po:#B03A82; --f-ux:#1F8585; --f-arch:#5B6B7A; --f-other:#9FAEB8;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
+  --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
+  --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+}}
+:root[data-theme="dark"]{
+  --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
+  --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
+  --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,"Times New Roman",serif;font-weight:600;margin:0;letter-spacing:-.01em}
+h1{font-size:1.45rem;line-height:1.15}
+h2{font-size:1.35rem;margin:0 0 .75rem}
+h3{font-size:1.05rem;font-weight:500;color:var(--ink-2);margin:1.25rem 0 .4rem}
+p{margin:0 0 .75rem;max-width:68ch}
+.wrap{max-width:1120px;margin:0 auto;padding:0 1.25rem 4rem}
+header{position:relative;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .7rem;padding:.35rem .9rem;border-bottom:1px solid var(--rule);background:var(--panel)}
+.brand{font-family:"Source Serif 4",Georgia,serif;font-weight:600;font-size:1.05rem;white-space:nowrap}
+#status{font-size:.82rem;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:24rem}
+.grow{flex:1}
+.btn{background:var(--marine);color:#fff;border:0;border-radius:4px;padding:.5rem .9rem;font:inherit;font-weight:500;cursor:pointer}
+header .btn{padding:.3rem .8rem;font-size:.9rem}
+:root[data-theme="dark"] .btn{color:#10222F}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .btn:not(.quiet){color:#10222F} }
+.btn:focus-visible,input:focus-visible,select:focus-visible,.tb:focus-visible,.mi:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.btn.quiet{background:transparent;color:var(--marine);border:1px solid var(--marine)}
+.fix{font-size:.88rem;color:var(--ink);display:flex;gap:.4rem;align-items:center;padding:.3rem .5rem;white-space:nowrap}
+.split{display:flex;gap:1px}
+.split #export:has(+ #exportopt:not(.hidden)){border-radius:4px 0 0 4px}
+.split #exportopt{border-radius:0 4px 4px 0;padding:.3rem .45rem}
+
+/* menus */
+.menu-wrap{position:relative}
+.pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;min-width:12rem;padding:.35rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+.mi{display:block;width:100%;text-align:left;font:inherit;font-size:.88rem;padding:.35rem .6rem;border:0;border-radius:4px;background:none;color:var(--ink);cursor:pointer;white-space:nowrap}
+.mi:hover{background:var(--marine-soft)}
+.pop hr{border:0;border-top:1px solid var(--rule);margin:.3rem 0}
+.pop .mlabel{font-size:.75rem;color:var(--ink-2);padding:.2rem .6rem .1rem}
+.pop .mnote{font-size:.78rem;color:var(--ink-2);margin:0;padding:0 .5rem .3rem;max-width:19rem;white-space:normal}
+#hlpop{width:min(36rem,92vw);max-height:65vh;overflow:auto;padding:.5rem .7rem .7rem}
+#hlpop .hgroup{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.15rem}
+#hlpop .hlabel{font-size:.75rem;color:var(--ink-2);margin-top:.5rem}
+#hlpop .chip,.strip .chip{font-size:.8rem;padding:.12rem .55rem}
+#hlq,#pq{font:inherit;font-size:.88rem;padding:.25rem .5rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);width:11rem}
+.tb.on{border-color:var(--amber);color:var(--amber)}
+.strip{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem .5rem;padding:.25rem .9rem;font-size:.82rem;color:var(--ink-2);border-bottom:1px solid var(--rule);background:var(--panel)}
+.picks{display:contents}
+.zero{opacity:.45}
+.opt{display:flex;align-items:center;gap:.5rem}
+.opt .ck{width:1rem;visibility:hidden;color:var(--fern);font-weight:600}
+.opt.on .ck{visibility:visible}
+.opt .ol{flex:1}
+.opt b{font-weight:500;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* people list */
+#people,#skills{padding-bottom:4rem}
+#sknote{font-size:.85rem;color:var(--ink-2)}
+#skills-body{padding-top:.9rem;max-width:none}
+.sgrid th,.sgrid td{padding:.35rem .6rem}
+.sgrid th.n,.sgrid td.n{text-align:right;white-space:nowrap}
+.sgrid th.c{text-align:center;font-size:.8rem;white-space:normal;min-width:4.2rem;max-width:7rem}
+.sgrid td.c{text-align:center;cursor:pointer}
+.sgrid td.c:hover{outline:2px solid var(--marine);outline-offset:-2px}
+.sgrid td.z{color:var(--rule)}
+.sgrid td.tgl.on{background:var(--fern-soft);color:var(--fern);font-weight:600}
+.sgrid tr.grp td{font-weight:600;font-size:.82rem;color:var(--ink-2);background:var(--paper)}
+.sgrid td.sk{white-space:nowrap}
+.pfilters{position:sticky;top:0;z-index:10;display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;padding:.45rem .9rem;border-bottom:1px solid var(--rule);background:var(--panel)}
+.pfilters .pop{left:0;right:auto;min-width:15rem;max-height:60vh;overflow:auto}
+#pcount{font-size:.85rem;color:var(--ink-2)}
+#loc-body{padding-top:.9rem;max-width:1360px}
+.ptable th button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.ptable th button:hover{color:var(--marine)}
+.ptable tr[data-edit]{cursor:pointer}
+.ptable td.go{text-align:right;width:1%}
+.ptable td.go .tb{padding:.1rem .5rem;font-size:.8rem}
+.ptable tr.starter td:first-child{box-shadow:inset 4px 0 var(--fern)}
+.ptable tr.leaver td:first-child{box-shadow:inset 4px 0 var(--rose)}
+.ptable td.d{white-space:nowrap;font-variant-numeric:tabular-nums}
+.ptable tr[data-edit]:hover td{background:var(--marine-soft)}
+
+/* empty state */
+.drop{margin:2rem auto;max-width:1080px;padding:3rem 1.5rem;border:2px dashed var(--rule);border-radius:8px;text-align:center;color:var(--ink-2);background:var(--panel)}
+.drop.over{border-color:var(--marine);background:var(--marine-soft)}
+.drop .ok{color:var(--fern);margin:.6rem 0 0;max-width:none}
+.drop .err{color:var(--rose);margin:.6rem 0 0;max-width:none}
+.drop strong{display:block;color:var(--ink);font-family:"Source Serif 4",serif;font-size:1.3rem;margin-bottom:.4rem}
+.drop code{background:var(--paper);padding:.1em .35em;border-radius:3px}
+
+/* tabs + toolbar */
+.tabs{display:flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden}
+.tabs button{font:inherit;font-size:.88rem;font-weight:500;padding:.25rem .75rem;border:0;background:transparent;color:var(--ink-2);cursor:pointer}
+.tabs button+button{border-left:1px solid var(--rule)}
+.tabs button.on{background:var(--ink);color:var(--paper)}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:.3rem}
+.tb{font:inherit;font-size:.88rem;padding:.3rem .6rem;border:1px solid var(--rule);border-radius:4px;background:var(--panel);color:var(--ink);cursor:pointer}
+.tb:disabled{color:var(--line);cursor:default}
+.tb:not(:disabled):hover{border-color:var(--marine);color:var(--marine)}
+select.tb{padding:.28rem .3rem}
+#zoomv{min-width:3.2rem;text-align:center;font-size:.88rem;color:var(--ink-2);font-variant-numeric:tabular-nums}
+
+/* chart */
+body.chart-mode{height:100dvh;display:flex;flex-direction:column;overflow:hidden}
+body.chart-mode #app{flex:1;min-height:0;display:flex;flex-direction:column}
+#chartview{flex:1;min-height:0;display:flex;flex-direction:column}
+#vp{flex:1;min-height:0;position:relative;overflow:hidden;cursor:default;touch-action:none;user-select:none;-webkit-user-select:none;
+  background-image:radial-gradient(var(--rule) 1px,transparent 1px);background-size:22px 22px}
+#vp.panning{cursor:grabbing}
+#canvas{position:absolute;left:0;top:0;transform-origin:0 0;width:max-content;padding:10px;display:flex;gap:40px;align-items:flex-start}
+.node{display:flex;flex-direction:column;align-items:center}
+.kids{position:relative;padding-top:18px}
+.kids::before{content:"";position:absolute;top:0;left:50%;height:18px;border-left:1.5px solid var(--line)}
+.kids.h{display:flex;align-items:flex-start}
+.kids.v,.stack{display:flex;flex-direction:column;gap:6px}
+.col{position:relative;padding:18px 7px 0;display:flex;justify-content:center}
+.col::before,.col::after{content:"";position:absolute;top:0;width:50%;height:18px;border-top:1.5px solid var(--line)}
+.col::before{right:50%}
+.col::after{left:50%;border-left:1.5px solid var(--line)}
+.col:first-child::before,.col:last-child::after{border-top-color:transparent}
+.card{position:relative;width:204px;background:var(--panel);border:1px solid var(--rule);border-left:11px solid var(--role,var(--line));border-radius:6px;padding:.35rem 1.6rem .4rem .5rem;font-size:13px;line-height:1.3;cursor:grab}
+.card .nm{font-weight:600;overflow-wrap:anywhere}
+.card .ti{color:var(--ink-2);overflow-wrap:anywhere}
+.card .nt{color:var(--ink-2);font-size:11.5px;font-style:italic;margin-top:.15rem;overflow-wrap:anywhere}
+.card .meta{display:flex;flex-wrap:wrap;gap:.2rem;margin-top:.2rem}
+.card .meta:empty{display:none}
+.card.vac{border-style:dashed;border-left-style:solid;background:var(--amber-soft)}
+.card.starter{background:var(--fern-soft);border-color:var(--fern)}
+.card.leaver{background:var(--rose-soft);border-color:var(--rose)}
+.card.starter,.card.leaver{border-left-color:var(--role,var(--line))}
+.card.starter .tag.nz,.card.leaver .tag.gap{background:var(--panel)}
+/* Coverage of a picked skill is carried by the header tag and a coloured border, not a fill, so it does not compete with the highlighted cards. */
+.team.cov0{border-color:var(--rose)}
+.team.cov1{border-color:var(--amber)}
+.tag.sk{background:var(--paper);color:var(--ink-2)}
+.tag.tg{background:color-mix(in srgb,var(--tc) 26%,var(--panel));color:var(--ink);box-shadow:inset 3px 0 var(--tc);padding-left:.6em}
+.tag.tg .x{font:inherit;border:0;background:none;color:inherit;cursor:pointer;padding:0 0 0 .25em;opacity:.7}
+.tag.tg .x:hover{opacity:1}
+#skpanel .tag{font-size:.76rem}
+#tagq{width:100%;margin-top:.35rem;font:inherit;font-size:.78rem;padding:.2rem .4rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink)}
+.card.sel,.team.sel{outline:2.5px solid var(--marine);outline-offset:1px}
+.card.into,.team.into{outline:2.5px solid var(--fern);outline-offset:1px;background:var(--fern-soft)}
+.dragging{opacity:.35}
+.card.dim{opacity:.15}
+.card.hit{box-shadow:0 0 0 3px var(--amber)}
+body.famspot .card.hit{box-shadow:0 0 0 3px var(--role)}   /* spotlighting a role family rings in its colour */
+/* role families: a badge before the name, a mix bar in team headers, and the key on the chart */
+.card .nm{display:flex;align-items:baseline;gap:.3rem}
+.mono{font:600 9.5px/1 "IBM Plex Sans",sans-serif;letter-spacing:.04em;padding:.22em .38em;border-radius:3px;background:var(--role);color:var(--role-ink,var(--panel));flex:none;align-self:center}
+#fdlg .mlabel2{font-size:.78rem;font-weight:600;color:var(--ink);margin:.8rem 0 .3rem}
+#fdlg .mlabel2 span{font-weight:400;color:var(--ink-2)}
+.fcols{display:grid;grid-template-columns:repeat(auto-fill,minmax(11.5rem,1fr));gap:.35rem .8rem}
+.fcol{display:flex;align-items:center;gap:.4rem;font-size:.86rem}
+.fcol input[type=color]{width:2rem;height:1.6rem;padding:0;border:1px solid var(--rule);border-radius:4px;background:none;cursor:pointer;flex:none}
+.fcol .lbl{flex:1;min-width:0}
+.fcol .mono{background:var(--fc);color:var(--fci,var(--panel))}
+.fcol .undo{font:inherit;font-size:.75rem;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 .2rem}
+.fcol .undo:hover{color:var(--marine)}
+.fbar{display:flex;flex:1 1 100%;order:3;height:9px;border-radius:3px;overflow:hidden;background:var(--panel);margin:.1rem 0 .05rem}
+.fbar button{display:block;height:100%;min-width:3px;border:0;padding:0;background:var(--fc);cursor:pointer}
+.fbar button+button{box-shadow:inset 1.5px 0 var(--team)}
+.fbar button.on{box-shadow:inset 0 0 0 2px var(--ink)}
+.fbar:hover{height:12px}
+.fkey{display:flex;flex-wrap:wrap;gap:.1rem .5rem;padding:0 .5rem .4rem;font-size:11px;color:var(--ink-2)}
+.fkey i{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;background:var(--fc);margin-right:.25rem;vertical-align:-.05em}
+#rolekey{position:absolute;left:12px;bottom:12px;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:.25rem;max-width:calc(100% - 300px);padding:.25rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;cursor:default}
+#rolekey .rk{font:inherit;font-size:.8rem;display:inline-flex;align-items:center;gap:.3rem;padding:.12rem .5rem .12rem .35rem;border:1px solid transparent;border-radius:999px;background:none;color:var(--ink);cursor:pointer}
+#rolekey .rk i{width:.7rem;height:.7rem;border-radius:3px;background:var(--fc)}
+#rolekey .rk b{font-weight:500;color:var(--ink-2);font-variant-numeric:tabular-nums}
+#rolekey .rk:hover{border-color:var(--rule)}
+#rolekey .rk.on{border-color:var(--fc);box-shadow:inset 0 0 0 1.5px var(--fc)}
+#rolekey .rkedit{font:inherit;font-size:.78rem;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:.1rem .4rem}
+#rolekey .rkedit:hover{color:var(--marine)}
+@media (max-width:700px){ #rolekey{max-width:calc(100% - 24px);bottom:56px} }
+.fam-lead{--fc:var(--f-lead)} .fam-dev{--fc:var(--f-dev)} .fam-test{--fc:var(--f-test)} .fam-po{--fc:var(--f-po)} .fam-ux{--fc:var(--f-ux)} .fam-arch{--fc:var(--f-arch)} .fam-other{--fc:var(--f-other)}
+#fdlg{width:min(40rem,94vw)}
+#fdlg .ftbl{max-height:42vh;overflow:auto;border:1px solid var(--rule);border-radius:6px;margin:.6rem 0 .2rem}
+#fdlg table{font-size:.86rem}
+#fdlg td,#fdlg th{padding:.3rem .55rem}
+#fdlg select{font:inherit;font-size:.84rem;padding:.15rem .3rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink)}
+#fdlg select.auto{color:var(--ink-2)}
+#fdlg td.n{text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.team{width:232px;border:1.5px solid var(--line);border-radius:8px;background:var(--team)}
+.team .team{width:auto}
+/* The team name gets the first line to itself (with the collapse button); tags and counts wrap onto the next. */
+.thead{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .4rem;padding:.35rem .5rem;cursor:grab;font-size:13px}
+.thead .tn{font-family:"Source Serif 4",serif;font-weight:600;font-size:14.5px;flex:1 1 calc(100% - 2rem);min-width:0;overflow-wrap:break-word}
+.thead .tog{order:1}
+.thead .tag,.thead .tc{order:2}
+.thead .tc{color:var(--ink-2);font-size:12px;white-space:nowrap}
+.tbody{display:flex;flex-direction:column;gap:6px;padding:0 6px 6px}
+.tbody .card,.sub .card{width:auto}
+.tbody .empty{color:var(--ink-2);font-size:12px;text-align:center;padding:.6rem .3rem;border:1px dashed var(--line);border-radius:6px}
+.sub{display:flex;flex-direction:column;gap:6px;margin-left:10px;padding-left:8px;border-left:1.5px solid var(--line)}
+.tog{font:inherit;font-size:11px;line-height:1;min-width:18px;height:18px;padding:0 3px;border:1px solid var(--rule);border-radius:9px;background:var(--paper);color:var(--ink-2);cursor:pointer}
+.card .tog{position:absolute;right:4px;top:5px}
+.ghost.copy::after{content:"+ Copy";position:absolute;right:-8px;top:-10px;background:var(--fern);color:#fff;font:600 11px/1 "IBM Plex Sans",sans-serif;padding:3px 6px;border-radius:9px}
+.ghost{position:fixed;left:0;top:0;z-index:50;pointer-events:none;opacity:.9;box-shadow:0 6px 18px rgba(0,0,0,.25);margin:0}
+#ins{position:fixed;z-index:40;background:var(--fern);border-radius:2px;pointer-events:none}
+#selbar{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:.1rem;padding:.2rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.22);cursor:default}
+#selbar .tb,#zoombox .tb{border-color:transparent;padding:.2rem .5rem;font-size:.82rem;white-space:nowrap}
+#selbar select{width:5rem}
+#selbar .danger{color:var(--rose)}
+#sellabel{font-size:.82rem;font-weight:600;padding:0 .5rem 0 .4rem;max-width:14rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-right:1px solid var(--rule);margin-right:.15rem}
+#skpanel{position:absolute;right:12px;top:12px;width:272px;max-height:calc(100% - 84px);overflow:auto;z-index:4;padding:.6rem .7rem .7rem;font-size:.82rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:default}
+#skpanel h4{margin:0;font:600 .98rem "Source Serif 4",Georgia,serif}
+#skpanel .sub2{color:var(--ink-2)}
+#skpanel .hlabel{font-size:.72rem;color:var(--ink-2);margin:.5rem 0 .2rem}
+#skpanel .hgroup{display:flex;flex-wrap:wrap;gap:.25rem}
+#skpanel .chip{font-size:.76rem;padding:.08rem .45rem}
+#skpanel .pedit{margin-top:.6rem}
+.skedit{position:sticky;top:-.6rem;z-index:1;display:flex;gap:.3rem;margin:.3rem 0 0;padding:.3rem 0;background:var(--panel)}
+.skedit input,.skrow .skd{font:inherit;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink)}
+.skedit input{flex:1;min-width:0;padding:.2rem .4rem}
+.skrow{display:flex;align-items:center;gap:.35rem;padding:.12rem 0;cursor:pointer}
+.skrow span{flex:1}
+.skrow .skd{width:6.5rem;font-size:.76rem;padding:.05rem .3rem}
+.lnk{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.lnk:hover{color:var(--marine);text-decoration:underline}
+.btn.danger{color:var(--rose);border-color:var(--rose)}
+.mode{font:inherit;font-size:.72rem;border:1px solid var(--rule);border-radius:999px;background:none;color:var(--marine);padding:.05rem .5rem;margin-left:.5rem;cursor:pointer}
+#zoombox{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:.1rem;padding:.2rem;background:var(--panel);border:1px solid var(--rule);border-radius:6px;cursor:default}
+.hint{position:absolute;right:12px;bottom:56px;width:19rem;font-size:.82rem;color:var(--ink-2);background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:.5rem .7rem;pointer-events:none}
+.hint b{color:var(--ink);font-weight:500}
+.hint div+div{margin-top:.2rem}
+.first{margin:3rem;font-size:1rem}
+
+/* View > Show on cards */
+.pop .chkrow{display:flex;align-items:center;gap:.5rem;padding:.3rem .6rem;font-size:.88rem;border-radius:4px;cursor:pointer;white-space:nowrap}
+.pop .chkrow:hover{background:var(--marine-soft)}
+
+/* groups: a team holding leads lays them out side by side */
+.team.group{width:auto}
+.gbody{display:flex;align-items:flex-start;gap:22px;padding:4px 12px 12px}
+.gbody .node>.team:not(.group){width:232px}
+.gbody>.stack{display:flex;flex-direction:column;gap:6px}
+
+/* logical view: cross-functional teams */
+body.lx .org-only,body:not(.lx) .lx-only{display:none}
+.seg{display:flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.seg button{font:inherit;font-size:.85rem;padding:.25rem .6rem;border:0;background:var(--panel);color:var(--ink-2);cursor:pointer}
+.seg button+button{border-left:1px solid var(--rule)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.thead .xe{order:1;font:inherit;font-size:12px;line-height:1;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 2px}
+.thead .xe:hover{color:var(--marine)}
+.xteam>.thead .tn{flex-basis:calc(100% - 3.4rem)}
+.xteam .xp{font-size:12px;font-style:italic;color:var(--ink-2);padding:0 .55rem .35rem}
+.xnone{border-style:dashed}
+.gbody>.xteam{width:232px}
+.xnone .gbody .team{width:220px}
+.tag.xr{background:var(--ink);color:var(--paper)}
+.xadd{align-self:flex-start;margin-top:.2rem}
+.xintro{width:300px;padding:.8rem .9rem;font-size:13px;color:var(--ink-2);background:var(--panel);border:1px solid var(--rule);border-radius:8px}
+.xintro b{color:var(--ink);font-weight:600}
+.xintro .tb{margin-top:.6rem}
+#skpanel .xrow{display:flex;align-items:center;gap:.3rem;padding:.15rem 0}
+#skpanel .xrow .lnk{flex:1;min-width:0;overflow-wrap:break-word}
+#skpanel .xrow input{font:inherit;font-size:.76rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);padding:.05rem .3rem}
+#skpanel .xrow .xpct{width:3.1rem;text-align:right}
+#skpanel .xrow .xrole{width:4.6rem}
+#skpanel .xrow .x{font:inherit;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:0 .2rem}
+#skpanel .xrow .x:hover{color:var(--rose)}
+#skpanel .over{color:var(--rose)}
+dialog textarea{display:block;width:100%;font:inherit;padding:.4rem .5rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);margin-top:.15rem;resize:vertical}
+
+/* multi-select */
+#marq{position:fixed;z-index:40;border:1.5px dashed var(--marine);background:color-mix(in srgb,var(--marine) 12%,transparent);pointer-events:none}
+.card.inmarq{outline:2px dashed var(--marine);outline-offset:1px}
+.ghost .cnt{position:absolute;left:-8px;top:-10px;background:var(--marine);color:#fff;font:600 11px/1 "IBM Plex Sans",sans-serif;padding:3px 6px;border-radius:9px}
+.chip.part{border-style:dashed}
+#skpanel select.tb{width:100%;margin-top:.45rem;font-size:.78rem}
+#skpanel .mrow{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem}
+#mtagq{width:100%;margin-top:.35rem;font:inherit;font-size:.78rem;padding:.2rem .4rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink)}
+dialog .mixed{font-style:italic;color:var(--amber)}
+
+/* scenarios */
+.card.ghostc{opacity:.6;background:transparent;border-style:dashed;cursor:default}
+.card.ghostc.gone .nm{text-decoration:line-through}
+.card.mvin:not(.hit){box-shadow:0 0 0 2px var(--marine)}
+#scpop{left:0;right:auto;min-width:16rem}
+.mi.danger{color:var(--rose)}
+.scstrip{background:var(--amber-soft);color:var(--ink);border-bottom-color:var(--amber)}
+.scstrip b{font-weight:600}
+#scinfo{color:var(--ink-2)}
+#compare{padding-bottom:4rem}
+#cmp-body{padding-top:.9rem;max-width:1360px}
+.ctable td .sub3{display:block;font-size:.8rem;color:var(--ink-2)}
+.ctable td .tag{margin:0 .2rem .2rem 0}
+.ctable tr[data-go]{cursor:pointer}
+.ctable tr[data-go]:hover td{background:var(--marine-soft)}
+.ctable td.num,.ctable th.num{white-space:nowrap;width:auto}
+
+/* dialog */
+dialog{border:1px solid var(--rule);border-radius:8px;background:var(--panel);color:var(--ink);padding:1.1rem 1.25rem;width:min(26rem,92vw)}
+dialog::backdrop{background:rgba(10,16,20,.45)}
+dialog h3{margin:0 0 .6rem;color:var(--ink)}
+dialog p{margin:0;color:var(--ink-2)}
+dialog label{display:block;font-size:.88rem;color:var(--ink-2);margin-bottom:.55rem}
+dialog .two{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+dialog input[type=text],dialog input[type=date]{display:block;width:100%;font:inherit;padding:.4rem .5rem;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);margin-top:.15rem}
+dialog label.chk{display:flex;gap:.4rem;align-items:center}
+.drow{display:flex;flex-direction:row-reverse;gap:.5rem;margin-top:.8rem}
+
+/* hero: stacked headcount bars per stream */
+.hero{margin:1.75rem 0 2.25rem}
+.bars{display:grid;gap:.45rem}
+.bar-row{display:grid;grid-template-columns:9rem 1fr 3.25rem;align-items:center;gap:.75rem}
+.bar-row .lbl{font-weight:500}
+.bar-row .n{text-align:right;font-family:"Source Serif 4",serif;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.hbar{display:flex;height:22px;border-radius:3px;overflow:hidden;background:var(--panel)}
+.hbar span{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:.35rem 1.1rem;margin-top:.9rem;color:var(--ink-2);font-size:.88rem}
+.legend i{display:inline-block;width:.8em;height:.8em;border-radius:2px;vertical-align:-.05em;margin-right:.35em}
+
+/* sections & tables */
+section{margin:2.25rem 0;padding-top:1.25rem;border-top:1px solid var(--rule)}
+.note{color:var(--ink-2);font-size:.92rem}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;background:var(--panel)}
+.tbl{overflow-x:auto;border:1px solid var(--rule);border-radius:6px;margin:.5rem 0 1rem}
+th,td{padding:.5rem .7rem;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:500;color:var(--ink-2);font-size:.88rem;white-space:nowrap}
+td.num,th.num{text-align:right;width:4.5rem}
+tr:last-child td{border-bottom:0}
+tr.total td{font-weight:600;border-top:2px solid var(--ink)}
+td.dim{color:var(--rule)}
+.tag{display:inline-block;padding:.08em .5em;border-radius:3px;font-size:.82rem;font-weight:500;white-space:nowrap}
+.card .tag{font-size:11px}
+.tag.vac{background:var(--amber-soft);color:var(--amber)}
+.card.vac .tag.vac{background:var(--panel)}
+.tag.nz{background:var(--fern-soft);color:var(--fern)}
+.tag.gap{background:var(--rose-soft);color:var(--rose)}
+.tag.move{background:var(--marine-soft);color:var(--marine)}
+.tag.loc{background:var(--paper);color:var(--ink-2)}
+.kpis{display:flex;flex-wrap:wrap;gap:.4rem 1.5rem;margin:.5rem 0 1rem}
+.kpis b{font-family:"Source Serif 4",serif;font-size:1.4rem;font-weight:600;margin-right:.25em}
+.kpis span{color:var(--ink-2)}
+.hidden{display:none !important}
+.chip{font:inherit;font-size:.9rem;padding:.3rem .7rem;border-radius:999px;border:1px solid var(--rule);background:var(--panel);color:var(--ink-2);cursor:pointer}
+.chip b{font-weight:600;margin-left:.2em}
+.chip.on{background:var(--fern-soft);color:var(--fern);border-color:var(--fern)}
+.chip:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+@media (max-width:600px){ .bar-row{grid-template-columns:6rem 1fr 2.5rem} h1{font-size:1.25rem} }
+@media (prefers-reduced-motion:no-preference){ .hbar span{transition:width .4s ease} }
+</style>
+</head>
+<body>
+<header>
+  <span class="brand">Orgcharter</span>
+  <nav class="tabs hidden" id="tabs"><button data-tab="chart" class="on">Chart</button><button data-tab="head">Headcount</button><button data-tab="people">People</button><button data-tab="skills" id="tabskills">Skills</button><button data-tab="compare" id="tabcmp" class="hidden">Compare</button></nav>
+  <div class="menu-wrap hidden" id="scwrap">
+    <button class="tb" id="scbtn" data-pop="scpop" title="The baseline is the chart as it is. Scenarios are proposed versions of it.">Baseline ▾</button>
+    <div class="pop hidden" id="scpop"></div>
+  </div>
+  <span id="status" class="hidden"></span>
+  <span class="grow"></span>
+  <div class="tools hidden" id="tools">
+    <button class="tb" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+    <button class="tb" id="redo" title="Redo (Ctrl+Y)" aria-label="Redo">↷</button>
+    <div class="seg" id="viewsw" role="group" aria-label="Chart layout">
+      <button data-view="org" title="The reporting line: who reports to whom">Reporting</button>
+      <button data-view="logical" title="Cross-functional teams, with each member's allocation and where they sit in the reporting line">Logical</button>
+    </div>
+    <input type="search" id="hlq" placeholder="Find name or title…" aria-label="Highlight by name or title">
+    <div class="menu-wrap">
+      <button class="tb" id="hlbtn" data-pop="hlpop" title="Highlight by role, location or status">Highlight ▾</button>
+      <div class="pop hidden" id="hlpop"><div id="hlchips"></div></div>
+    </div>
+    <div class="menu-wrap">
+      <button class="tb" data-pop="viewpop">View ▾</button>
+      <div class="pop hidden" id="viewpop">
+        <button class="mi" id="collapse">Collapse teams</button>
+        <button class="mi" id="expand">Expand all</button>
+        <hr>
+        <div class="mlabel">Show on cards</div>
+        <label class="chkrow"><input type="checkbox" data-show="title"> Title</label>
+        <label class="chkrow"><input type="checkbox" data-show="badge"> Role badge</label>
+        <label class="chkrow"><input type="checkbox" data-show="loc"> Location</label>
+        <label class="chkrow"><input type="checkbox" data-show="tags"> Tags</label>
+        <label class="chkrow"><input type="checkbox" data-show="skills"> Skill count</label>
+        <label class="chkrow"><input type="checkbox" data-show="dates"> Start and end dates</label>
+        <label class="chkrow"><input type="checkbox" data-show="notes"> Notes</label>
+        <button class="mi" id="famedit">Role groups…</button>
+        <div id="sortall">
+          <hr>
+          <div class="mlabel">Sort every group by</div>
+          <button class="mi" data-sortall="title">Title, then name</button>
+          <button class="mi" data-sortall="name">Name</button>
+          <button class="mi" data-sortall="loc">Location, then name</button>
+        </div>
+        <div id="xmenu">
+          <hr>
+          <button class="mi" data-xadd="">New cross-functional team…</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <input type="file" id="file" accept=".csv,.xlsx,text/csv" multiple class="hidden">
+  <button class="btn" id="pick">Load files</button>
+  <div class="menu-wrap hidden" id="morewrap">
+    <button class="tb" data-pop="morepop" aria-label="More" title="More">⋯</button>
+    <div class="pop hidden" id="morepop">
+      <button class="mi" id="pick2">Open workbook, Miro CSV or skills file…</button>
+      <button class="mi hidden" id="rmskills">Remove all skills</button>
+      <button class="mi" id="clear">Clear chart</button>
+    </div>
+  </div>
+  <div class="menu-wrap split hidden" id="exportwrap">
+    <button class="btn" id="export" title="Save the chart, its scenarios and the skills as one Excel workbook (Ctrl+S). It overwrites the workbook you opened; if there is none yet, it asks for a name and place.">Save workbook</button>
+    <button class="btn" id="exportopt" data-pop="exportpop" aria-label="More export options" title="More export options">▾</button>
+    <div class="pop hidden" id="exportpop">
+      <button class="mi" id="saveas">Save workbook as…</button>
+      <button class="mi" id="exmiro">Export CSV for Miro…</button>
+      <p class="mnote">The chart you are looking at (the baseline or a scenario), in Miro's layout: titles under Name and names under Job Title.</p>
+    </div>
+  </div>
+</header>
+
+<div class="drop" id="drop">
+  <strong>Drop a saved workbook here, or the Miro org-chart CSV</strong>
+  A workbook saved from this planner holds the chart, its scenarios and the skills together. A Miro export needs the columns <code>PersonID, SupervisorID, Name, Job Title, Hiring, Location</code>, plus an optional <code>Notes</code> column. Rows whose name is <code>(TEAM)</code> are treated as teams. Streams, roles and locations are inferred from the file. The skills file is optional: a CSV or Excel workbook with one row per person per skill and the columns <code>PersonID, Skill</code>, plus optional <code>Skill Group</code> and <code>Detail</code>. Nothing leaves your browser.
+  <p class="ok hidden" id="dropnote"></p>
+  <p class="err hidden" id="droperr"></p>
+</div>
+
+<div id="app" class="hidden">
+  <div class="strip scstrip hidden" id="scstrip">
+    <span>Scenario <b id="scname"></b> · edits here leave the baseline as it is</span><span id="scinfo"></span>
+    <span class="grow"></span>
+    <button class="tb" id="scdiff" title="Mark on the chart what differs from the baseline">Hide changes</button>
+    <button class="tb" id="scback">Show the baseline</button>
+  </div>
+  <div class="strip hidden" id="hlstrip">
+    <span>Highlighting</span><span class="picks" id="hlpicks"></span><span id="hlcount"></span>
+    <button class="tb" id="hlsel" title="Select everyone highlighted, to tag or edit them together (Ctrl+A)">Select these</button>
+    <button class="tb fclear" id="hlclear">Clear</button>
+  </div>
+
+  <div id="chartview">
+    <div id="vp">
+      <div id="canvas"></div>
+      <div id="skpanel" class="hidden"></div>
+      <div id="selbar" class="hidden">
+        <span id="sellabel"></span>
+        <button class="tb" id="edit" title="Edit (Enter or double-click)">Edit</button>
+        <button class="tb" id="addseat" title="Add a seat under this">+ Person</button>
+        <button class="tb" id="addteam" title="Add a team under this">+ Team</button>
+        <button class="tb" id="convert"></button>
+        <select class="tb" id="sortsel" aria-label="Sort this group" title="Sort this team, or this person's reports">
+          <option value="">Sort…</option>
+          <option value="title">By title, then name</option>
+          <option value="name">By name</option>
+          <option value="loc">By location, then name</option>
+        </select>
+        <button class="tb danger" id="del" title="Delete; reports move up a level (Delete)">Delete</button>
+      </div>
+      <div class="hint hidden" id="hint">
+        <div class="org-only"><b>Drag</b> a card or team header to move it</div>
+        <div class="org-only"><b>Ctrl+drag</b> to copy it</div>
+        <div class="org-only">Drop on the <b>middle</b> to report to, on an <b>edge</b> to reorder</div>
+        <div class="lx-only"><b>Drag</b> a card onto a team to move them into it, or onto <b>Not in a cross-functional team</b> to take them out</div>
+        <div class="lx-only"><b>Ctrl+drag</b> to add them to a team as well, keeping the one they are in</div>
+        <div class="lx-only">Reporting lines do not change here; click a card to set allocation and role</div>
+        <div><b>Scroll</b> or <b>right-drag</b> to pan, <b>Ctrl+scroll</b> to zoom</div>
+        <div><b>Click</b> or <b>right-click</b> a card for its actions</div>
+        <div><b>Ctrl+click</b>, or <b>drag a box</b> over empty space, to select several · <b>Ctrl+A</b> all (or all highlighted) · <b>Esc</b> clear</div>
+        <div><b>Enter</b> edit · <b>Delete</b> remove · <b>Ctrl+Z / Y</b> undo, redo · <b>0</b> fit</div>
+      </div>
+      <div id="rolekey" role="group" aria-label="Role groups: click one to spotlight it"></div>
+      <div id="zoombox">
+        <button class="tb" id="zout" aria-label="Zoom out">−</button>
+        <span id="zoomv">100%</span>
+        <button class="tb" id="zin" aria-label="Zoom in">+</button>
+        <button class="tb" id="zfit" title="Fit the whole chart (0)">Fit</button>
+        <button class="tb" id="help" aria-label="Mouse and keyboard help" title="Mouse and keyboard help">?</button>
+      </div>
+    </div>
+  </div>
+
+  <main id="out" class="wrap hidden">
+    <div class="hero">
+      <div class="kpis" id="kpis"></div>
+      <div class="bars" id="bars"></div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <section id="sizes">
+      <h2>Stream and team sizes by role</h2>
+      <p class="note">Counts include vacant seats and people starting or finishing soon. Role columns are taken from the job titles in the file, with qualifiers like (Delivery) or 0.3 removed. People reporting straight to the stream lead are shown as "Shared in stream".</p>
+      <div id="sizes-body"></div>
+    </section>
+
+    <section id="xsec" class="hidden">
+      <h2>Cross-functional teams</h2>
+      <p class="note">People and FTE in each cross-functional team, and where in the reporting line the FTE comes from. FTE adds up each member's allocation; open seats are counted apart.</p>
+      <div id="x-body"></div>
+    </section>
+
+    <section id="vacancies">
+      <h2>Vacant roles</h2>
+      <div id="vac-body"></div>
+      <h3>Upcoming gaps not yet flagged as vacancies</h3>
+      <div id="gap-body"></div>
+    </section>
+
+    <section id="moves">
+      <h2>Roles flagged as relocating</h2>
+      <div id="move-body"></div>
+    </section>
+  </main>
+
+  <main id="people" class="hidden">
+    <div class="pfilters">
+      <input type="search" id="pq" placeholder="Find name or title…" aria-label="Find by name or title">
+      <div class="menu-wrap"><button class="tb" data-pop="pf-loc">Location ▾</button><div class="pop pfpop hidden" id="pf-loc"></div></div>
+      <div class="menu-wrap"><button class="tb" data-pop="pf-role" title="The job title with qualifiers like (Delivery) or 0.3 removed, as on the Headcount tab">Role ▾</button><div class="pop pfpop hidden" id="pf-role"></div></div>
+      <div class="menu-wrap"><button class="tb" data-pop="pf-stream">Stream ▾</button><div class="pop pfpop hidden" id="pf-stream"></div></div>
+      <div class="menu-wrap"><button class="tb" data-pop="pf-team">Team ▾</button><div class="pop pfpop hidden" id="pf-team"></div></div>
+      <div class="menu-wrap"><button class="tb" data-pop="pf-status">Status ▾</button><div class="pop pfpop hidden" id="pf-status"></div></div>
+      <div class="menu-wrap hidden" id="pfxwrap"><button class="tb" data-pop="pf-xteam">Cross-functional ▾</button><div class="pop pfpop hidden" id="pf-xteam"></div></div>
+      <div class="menu-wrap hidden" id="pftagwrap"><button class="tb" data-pop="pf-tag">Tag ▾</button><div class="pop pfpop hidden" id="pf-tag"></div></div>
+      <div class="menu-wrap"><button class="tb" data-pop="pf-family" title="Job titles grouped into lead, developer, test, product, design and architecture">Role group ▾</button><div class="pop pfpop hidden" id="pf-family"></div></div>
+      <div class="menu-wrap hidden" id="pfskillwrap"><button class="tb" data-pop="pf-skill">Skill ▾</button><div class="pop pfpop hidden" id="pf-skill"></div></div>
+      <label class="fix" title="Open seats are left out of the list unless this is ticked"><input type="checkbox" id="pvac"> Include vacant</label>
+      <span class="grow"></span>
+      <span id="pcount"></span>
+    </div>
+    <div class="strip hidden" id="pstrip"><span class="picks"></span><button class="tb fclear">Clear</button></div>
+    <div class="wrap" id="loc-body"></div>
+  </main>
+
+  <main id="skills" class="hidden">
+    <div class="pfilters">
+      <label class="fix">Columns <select class="tb" id="skcols"><option value="stream">Streams</option><option value="team">Teams</option><option value="people">People in one team</option></select></label>
+      <select class="tb hidden" id="skteam" aria-label="Team"></select>
+      <label class="fix" title="Skills that will have nobody, or only one person, once people with an end date have gone"><input type="checkbox" id="skrisk"> Only at risk</label>
+      <button class="tb" id="skadd">+ Skill</button>
+      <span class="grow"></span>
+      <span id="sknote"></span>
+    </div>
+    <div class="wrap" id="skills-body"></div>
+  </main>
+
+  <main id="compare" class="hidden">
+    <div class="pfilters">
+      <label class="fix">Compare <select class="tb" id="cmpa"></select></label>
+      <label class="fix">with <select class="tb" id="cmpb"></select></label>
+      <button class="tb" id="cmpswap" title="Swap the two" aria-label="Swap the two">⇄</button>
+      <label class="fix"><input type="checkbox" id="cmpall"> Show unchanged teams</label>
+    </div>
+    <div class="wrap" id="cmp-body"></div>
+  </main>
+</div>
+
+<dialog id="cdlg">
+  <form method="dialog">
+    <h3 id="ch"></h3>
+    <p id="cmsg"></p>
+    <div class="drow"><button class="btn" value="ok" id="cok">Delete</button><button class="btn quiet" value="cancel" autofocus>Cancel</button></div>
+  </form>
+</dialog>
+<dialog id="ndlg">
+  <form method="dialog" id="nform">
+    <h3>Save as</h3>
+    <label>File name <input type="text" name="fname" autocomplete="off"></label>
+    <p>The file goes to your downloads folder, unless your browser is set to ask where to save each file.</p>
+    <div class="drow"><button class="btn" value="ok" id="nok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
+<dialog id="sdlg">
+  <form method="dialog" id="sform">
+    <h3 id="sdh"></h3>
+    <label>Skill <input type="text" name="skill" autocomplete="off"></label>
+    <label>Group <input type="text" name="group" list="sgroups" autocomplete="off"></label>
+    <datalist id="sgroups"></datalist>
+    <p id="sdnote"></p>
+    <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button><span class="grow"></span><button class="btn quiet danger hidden" value="del" id="sddel" formnovalidate>Delete skill</button></div>
+  </form>
+</dialog>
+<dialog id="fdlg">
+  <form method="dialog" id="fform">
+    <h3>Role groups</h3>
+    <p>Each group's colour, and which group each role is in. Changes are kept in this browser.</p>
+    <div class="mlabel2">Colours</div>
+    <div class="fcols" id="fcols"></div>
+    <div class="mlabel2">Roles <span>Each role is put in a group from words in its title. Pick a group to override that.</span></div>
+    <div class="ftbl"><table><thead><tr><th>Role</th><th class="num">Seats</th><th>Group</th></tr></thead><tbody id="fbody"></tbody></table></div>
+    <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button><span class="grow"></span><button class="btn quiet" value="reset" formnovalidate title="Go back to the standard colours and the groups worked out from the titles">Reset all</button></div>
+  </form>
+</dialog>
+<dialog id="xdlg">
+  <form method="dialog" id="xform">
+    <h3 id="xdh"></h3>
+    <label>Name <input type="text" name="xname" autocomplete="off" required></label>
+    <label>Group <input type="text" name="xgroup" list="xgroups" autocomplete="off" placeholder="e.g. a tribe or initiative; optional"></label>
+    <datalist id="xgroups"></datalist>
+    <label>Purpose <textarea name="xpurpose" rows="2" placeholder="Optional"></textarea></label>
+    <p id="xdnote"></p>
+    <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button><span class="grow"></span><button class="btn quiet danger hidden" value="del" id="xddel" formnovalidate>Delete team</button></div>
+  </form>
+</dialog>
+<dialog id="scdlg">
+  <form method="dialog" id="scform">
+    <h3 id="sch"></h3>
+    <label>Name <input type="text" name="sname" maxlength="20" autocomplete="off" required></label>
+    <p id="scnote"></p>
+    <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
+<dialog id="dlg">
+  <form method="dialog" id="dform">
+    <h3 id="dh"></h3>
+    <label class="seat-only one-only">Name <input type="text" name="person" autocomplete="off"></label>
+    <label><span id="dtl">Title</span> <input type="text" name="title" autocomplete="off"></label>
+    <label class="seat-only">Location <input type="text" name="loc" list="locs" autocomplete="off"></label>
+    <datalist id="locs"></datalist>
+    <label class="seat-only">Notes <input type="text" name="notes" autocomplete="off"></label>
+    <div class="two seat-only">
+      <label>Start date <input type="date" name="start"></label>
+      <label>End date <input type="date" name="end"></label>
+    </div>
+    <label class="seat-only one-only">Tags <input type="text" name="tags" autocomplete="off" placeholder="e.g. Claude POC; Mentor"></label>
+    <label class="seat-only chk"><input type="checkbox" name="hiring"> Open seat (hiring)</label>
+    <div class="drow"><button class="btn" value="ok">Save</button><button class="btn quiet" value="cancel" formnovalidate>Cancel</button></div>
+  </form>
+</dialog>
+<div id="ins" class="hidden"></div>
+<div id="marq" class="hidden"></div>
+
+<script>
+(function(){
+/*core*/
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  text=text.replace(/^﻿/,'');
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){f+='"';i++;} else q=false; } else f+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){row.push(f);f='';}
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(f);rows.push(row);row=[];f=''; }
+    else f+=c;
+  }
+  if(f.length||row.length){row.push(f);rows.push(row);}
+  const head=(rows.shift()||[]).map(h=>h.trim());
+  return {head,rows:rows.filter(r=>r.some(x=>x.trim())).map(r=>Object.fromEntries(head.map((h,i)=>[h,(r[i]??"").replace(/​/g,"").trim()])))};
+}
+
+/* ---------- model ---------- */
+// The only vocabulary the page relies on. Everything else is inferred from the file's structure and values.
+const VOCAB={
+  team:/^\(team\)$/i,                                    // person value marking a team row
+  placeholder:/^(add a description)?$/i,                 // Miro's default text on container (team) nodes
+  vacant:/^vacant$/i,                                    // person value meaning an open seat (or Hiring = Yes)
+  streamHead:/\b(lead|leader|director|head)\b/i,         // titles that can head a stream
+  leaving:/\bleav/i, finish:/\bfinish(?:es|ing)?\s*([^)\];]+)/i, start:/\b(?:start(?:s|ing)?\s*([^)\];]*)|(\d+\s+\w+)\s+new)/i,
+  move:/\b(reloc\w*|moving)\b[^)\];]*/i
+};
+const TEAM_MARK='(TEAM)', NO_TEAM='Shared in stream';
+const sig=n=>[n.title,n.person,n.hiring,n.loc,n.notes,n.start,n.end,n.tags].join('\u0001');
+// Tags are free labels on a person (a project, a working group), kept in one Tags column separated by semicolons.
+const tagList=v=>[...new Set(String(v||'').split(/[;,]/).map(t=>t.trim().replace(/\s+/g,' ')).filter(Boolean))];
+const allTags=doc=>[...new Set(Object.values(doc.nodes).flatMap(n=>tagList(n.tags)))].sort((a,b)=>a.localeCompare(b));
+function setTag(doc,id,tag,on){ const n=doc.nodes[id], t=tagList(n.tags).filter(x=>x.toLowerCase()!==tag.toLowerCase()); if(on) t.push(tag); n.tags=t.join('; '); }
+// Dates are kept as ISO text (2026-10-13). Day/month/year input is accepted and converted; anything else is left as typed.
+const toISO=v=>{ v=String(v||'').trim(); let m=v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/); if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  m=v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); return m?m[3]+'-'+m[2].padStart(2,'0')+'-'+m[1].padStart(2,'0'):/^\d{5}(\.\d+)?$/.test(v)?new Date(Date.UTC(1899,11,30)+Math.floor(+v)*864e5).toISOString().slice(0,10):''; };
+const isoDay=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate=iso=>{ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return d+' '+MONTHS[m-1]+(y!==new Date().getFullYear()?' '+y:''); };
+const NEW_DAYS=30;   // someone counts as a new starter until this many days after their start date
+const isVacant=n=>/yes/i.test(n.hiring)||VOCAB.vacant.test(n.person);
+const roleName=t=>t.replace(/\s*\(.*?\)\s*/g,' ').replace(/\s*\[.*?\]\s*/g,' ').replace(/\s+\d+(?:\.\d+)?%?\s*$/,'').replace(/\s+/g,' ').trim();
+const headName=t=>{ const m=t.match(/\[(.+?)\]/); if(m) return m[1].trim();
+  return t.replace(/\(.*?\)/g,'').replace(/\b(product delivery lead|lead|leader|director of|head of|director|head)\b/gi,'').replace(/\s+/g,' ').trim() || t; };
+const sibs=(doc,pid)=>pid?doc.nodes[pid].kids:doc.roots;
+function walk(doc,fn){ const go=(id,d)=>{ const n=doc.nodes[id]; fn(n,d); n.kids.forEach(k=>go(k,d+1)); }; doc.roots.forEach(r=>go(r,0)); }
+
+// CSV text -> document: teams and seats, each with an ordered list of children (file order = sibling order).
+function toDoc(text,name){ return tableToDoc(parseCSV(text),name,/\r\n/.test(text)?'\r\n':'\n',/[\r\n]$/.test(text)); }
+// The same from a table (a header row plus row objects), which is also what a workbook sheet gives.
+function tableToDoc({head,rows},name,eol,trail){
+  const col=(k,dflt)=>head.find(h=>h.toLowerCase()===k)||dflt;
+  const cId=col('personid'), cSup=col('supervisorid');
+  const need=[!cId&&'PersonID',!cSup&&'SupervisorID'].filter(Boolean);
+  if(need.length) throw new Error('Missing columns: '+need.join(', '));
+  const cols={id:cId,sup:cSup,hiring:col('hiring','Hiring'),loc:col('location','Location'),notes:col('notes','Notes'),start:col('start date','Start Date'),end:col('end date','End Date'),tags:col('tags','Tags')};
+  const fixed=new Set(Object.values(cols));
+  const free=head.filter(h=>!fixed.has(h)&&!/^team$/i.test(h));
+  const named=free.filter(h=>/name|title|role/i.test(h));
+  const [a,b]=named.length>=2?named:free;
+  if(!a||!b) throw new Error('Expected a Name column and a Job Title column');
+  // Which of the two holds people? The one carrying (TEAM)/Vacant markers; failing that, titles repeat and names mostly don't.
+  const marks=c=>rows.filter(r=>VOCAB.team.test(r[c])||VOCAB.vacant.test(r[c])).length;
+  const plain=rows.filter(r=>![a,b].some(c=>VOCAB.team.test(r[c])||VOCAB.vacant.test(r[c])||!r[c]));
+  const repeat=c=>{const v=plain.map(r=>r[c]);return 1-new Set(v).size/Math.max(v.length,1);};
+  const isTitle=h=>+/title|role/i.test(h);
+  const aIsPerson=(marks(a)-marks(b)||repeat(b)-repeat(a)||isTitle(b)-isTitle(a))>0 || (marks(a)===marks(b)&&repeat(a)===repeat(b)&&isTitle(a)===isTitle(b)&&/name/i.test(a));
+  cols.person=aIsPerson?a:b; cols.title=aIsPerson?b:a;
+
+  const nodes={},order=[];
+  rows.forEach(r=>{ const id=r[cId]; if(!id||nodes[id]) return;
+    const extra={}; head.forEach(h=>{ if(!fixed.has(h)&&h!==a&&h!==b&&r[h]) extra[h]=r[h]; });
+    nodes[id]={id,sup:r[cSup]||'',type:'seat',title:r[cols.title]||'',person:r[cols.person]||'',hiring:r[cols.hiring]||'',loc:r[cols.loc]||'',notes:r[cols.notes]||'',start:toISO(r[cols.start])||r[cols.start]||'',end:toISO(r[cols.end])||r[cols.end]||'',tags:tagList(r[cols.tags]).join('; '),extra,kids:[]};
+    order.push(id); });
+  const roots=[];
+  order.forEach(id=>{ const n=nodes[id]; if(n.sup&&nodes[n.sup]&&n.sup!==id) nodes[n.sup].kids.push(id); else { n.sup=''; roots.push(id); } });
+  // Break reporting loops: anything not reachable from a root becomes one.
+  const seen=new Set(), mark=id=>{ if(seen.has(id)) return; seen.add(id); nodes[id].kids.forEach(mark); };
+  roots.forEach(mark);
+  order.forEach(id=>{ if(seen.has(id)) return; const n=nodes[id], k=nodes[n.sup].kids; k.splice(k.indexOf(id),1); n.sup=''; roots.push(id); mark(id); });
+
+  // Teams: the (TEAM) marker, Miro's placeholder text, or a person value reused on several nodes that have reports
+  // (Miro fills new containers with the board owner's name).
+  const reuse={}; order.forEach(id=>{ const n=nodes[id]; if(n.kids.length&&n.person&&!isVacant(n)) reuse[n.person]=(reuse[n.person]||0)+1; });
+  order.forEach(id=>{ const n=nodes[id];
+    if(VOCAB.team.test(n.person) || (!isVacant(n) && (VOCAB.placeholder.test(n.person) || (n.kids.length>0&&reuse[n.person]>1)))) n.type='team'; });
+
+  const orig={}; order.forEach(id=>{ orig[id]={sup:nodes[id].sup,sig:sig(nodes[id])}; });
+  return {name:name||'org-chart.csv',eol:eol||'\r\n',trail:!!trail,head,cols,
+    swapped:/name/i.test(cols.title)&&/title|role/i.test(cols.person),nodes,roots,orig,xf:blankXF()};
+}
+
+// The chart as a header row plus data rows in display order, in the column layout it was loaded with.
+// swap exchanges what sits under the two text headers: a Miro export has titles under Name and names under Job Title,
+// the workbook has them the right way round. doc.swapped says which way the loaded file was.
+function orgTable(doc,swap){
+  const c=doc.cols, all=Object.values(doc.nodes), head=doc.head.slice(), rows=[];
+  [['hiring',c.hiring],['loc',c.loc],['notes',c.notes],['start',c.start],['end',c.end],['tags',c.tags]].forEach(([k,h])=>{ if(!head.includes(h)&&all.some(n=>n[k])) head.push(h); });
+  walk(doc,n=>{ const row={...n.extra,[c.id]:n.id,[c.sup]:n.sup,[c.title]:swap?n.person:n.title,[c.person]:swap?n.title:n.person,[c.hiring]:n.hiring,[c.loc]:n.loc,[c.notes]:n.notes,[c.start]:n.start,[c.end]:n.end,[c.tags]:n.tags||''};
+    rows.push(head.map(h=>String(row[h]??''))); });
+  return {head,rows};
+}
+function toCSV(doc,swap){
+  const {head,rows}=orgTable(doc,swap), q=v=>/[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;
+  return [head,...rows].map(r=>r.map(q).join(',')).join(doc.eol)+(doc.trail?doc.eol:'');
+}
+
+// Everything the headcount tables and cards need, worked out from the current tree. Teams are never counted as people.
+function derive(doc){
+  const N=doc.nodes, info={}, people=[];
+  const now=new Date(), today=isoDay(now), since=isoDay(new Date(now.getFullYear(),now.getMonth(),now.getDate()-NEW_DAYS));
+  const isTeam=n=>n.type==='team';
+  const canHead=n=>!isTeam(n) && n.kids.length>0 && VOCAB.streamHead.test(n.title);
+  const personKids=n=>n.kids.flatMap(k=>isTeam(N[k])?personKids(N[k]):[N[k]]);
+  // Stream heads: a titled lead whose reports are not themselves stream heads
+  walk(doc,n=>{ if(isTeam(n)) return;
+    const p={id:n.id,title:n.title,person:n.person,loc:n.loc,notes:n.notes,hiring:/yes/i.test(n.hiring),startISO:toISO(n.start),endISO:toISO(n.end),tags:tagList(n.tags)};
+    p.isHead=canHead(n) && !personKids(n).some(canHead);
+    info[n.id]=p; people.push(p); });
+  people.forEach(n=>{
+    let a=N[N[n.id].sup], team=null, stream=null;
+    if(n.isHead) stream=headName(n.title);
+    while(a){
+      if(isTeam(a) && !team) team=a.title||'(unnamed team)';
+      if(!isTeam(a) && info[a.id].isHead && !stream) stream=headName(a.title);
+      a=N[a.sup];
+    }
+    n.aboveStreams=!stream;
+    n.stream=stream||'Executive'; n.team=team||NO_TEAM;
+    // Above the streams only managers count as leadership, so a team parked outside any stream (while planning)
+    // does not turn its developers' role into a lead role everywhere.
+    n.isLead = n.isHead || (n.aboveStreams && N[n.id].kids.length>0);
+    const t=n.title+(n.notes?' ('+n.notes+')':'');
+    n.vacant = n.hiring || VOCAB.vacant.test(n.person);
+    // Starters and leavers: an explicit date wins; without one, fall back to the words in the title or notes.
+    const sm=t.match(VOCAB.start), fin=(t.match(VOCAB.finish)||[])[1];
+    n.startTag = n.startISO ? (n.startISO>=since?(n.startISO>today?'Starts ':'Started ')+fmtDate(n.startISO):'') : sm?('Starting '+(sm[1]||sm[2]||'')).trim():'';
+    n.endTag = n.endISO ? (n.endISO>=today?'Ends ':'Ended ')+fmtDate(n.endISO) : fin?'Finishes '+fin.trim():VOCAB.leaving.test(t)?'Leaving':'';
+    n.starting=!!n.startTag; n.leaving=!!n.endTag;
+    const mm=t.match(VOCAB.move); n.moving=!!mm; n.moveNote=mm?mm[0].replace(/^\w/,c=>c.toUpperCase()).replace(/\bbris\b/i,'Brisbane'):'';
+    n.roleName = roleName(n.title);
+  });
+  return {people,info};
+}
+
+/* ---------- edits (each mutates the document in place) ---------- */
+function isUnder(doc,id,anc){ for(let a=id;a;a=doc.nodes[a].sup) if(a===anc) return true; return false; }
+function move(doc,id,pid,idx){
+  pid=pid||'';
+  if(pid&&isUnder(doc,pid,id)) return false;
+  const n=doc.nodes[id], from=sibs(doc,n.sup), i=from.indexOf(id), to=sibs(doc,pid);
+  if(idx==null) idx=to.length;
+  from.splice(i,1); if(from===to&&i<idx) idx--;
+  to.splice(idx,0,id); n.sup=pid; return true;
+}
+// Removing a node moves its reports up to take its place.
+function remove(doc,id){
+  const n=doc.nodes[id], s=sibs(doc,n.sup);
+  n.kids.forEach(k=>{doc.nodes[k].sup=n.sup;});
+  s.splice(s.indexOf(id),1,...n.kids); delete doc.nodes[id];
+}
+// taken, if given, is a set of IDs in use elsewhere (other scenarios), so the same ID never means two different seats.
+function newId(doc,taken){
+  const all=Object.keys(doc.nodes).concat(Object.keys(doc.orig),[...(taken||[])]), used=new Set(all);
+  let i=1+Math.max(0,...all.map(Number).filter(Number.isFinite)); while(used.has(String(i))) i++;
+  return String(i);
+}
+// Copies a node and everything under it, with fresh IDs, into pid at idx (end when omitted). map, if given, collects old ID -> new ID.
+function copy(doc,id,pid,idx,map,taken){
+  pid=pid||'';
+  const src=JSON.parse(JSON.stringify(doc.nodes));
+  const clone=(sid,sup)=>{ const nid=newId(doc,taken), o=src[sid]; doc.nodes[nid]={...o,id:nid,sup,extra:{...o.extra},kids:[]}; if(map) map[sid]=nid;
+    doc.nodes[nid].kids=o.kids.map(k=>clone(k,nid)); return nid; };
+  const nid=clone(id,pid), to=sibs(doc,pid);
+  to.splice(idx==null?to.length:idx,0,nid); return nid;
+}
+function add(doc,pid,type,taken){
+  const id=newId(doc,taken);
+  doc.nodes[id]=type==='team'
+    ?{id,sup:pid||'',type,title:'New team',person:TEAM_MARK,hiring:'',loc:'',notes:'',start:'',end:'',tags:'',extra:{},kids:[]}
+    :{id,sup:pid||'',type:'seat',title:'New role',person:'Vacant',hiring:'Yes',loc:'',notes:'',start:'',end:'',tags:'',extra:{},kids:[]};
+  sibs(doc,pid).push(id); return id;
+}
+// Turns a team into a seat or a seat into a team, in place, keeping its ID, position and everything under it.
+// The team's name becomes the seat's title (and back); a new seat is vacant until someone is named.
+function convert(doc,id){
+  const n=doc.nodes[id];
+  if(n.type==='team') Object.assign(n,{type:'seat',person:'Vacant',hiring:'Yes'});
+  else Object.assign(n,{type:'team',person:TEAM_MARK,hiring:'',loc:'',notes:'',start:'',end:'',tags:''});
+}
+// Teams first (by name), then seats by the chosen keys. Open seats sort after named people.
+function sortKids(doc,pid,key,deep){
+  const N=doc.nodes, role=n=>roleName(n.title).toLowerCase(), nm=n=>n.person.toLowerCase(), vac=n=>+isVacant(n), loc=n=>n.loc.toLowerCase();
+  const fs={title:[role,vac,nm],name:[vac,nm,role],loc:[vac,n=>+!n.loc,loc,nm,role]}[key];
+  const cmp=(x,y)=>{ const a=N[x],b=N[y], ta=a.type==='team', tb=b.type==='team';
+    if(ta||tb) return tb-ta||a.title.localeCompare(b.title);
+    for(const f of fs){ const u=f(a),v=f(b); if(u!==v) return typeof u==='number'?u-v:u.localeCompare(v); }
+    return 0; };
+  if(deep){ doc.roots.sort(cmp); Object.values(N).forEach(n=>n.kids.sort(cmp)); } else sibs(doc,pid).sort(cmp);
+}
+// ref is what the chart is measured against: ID -> {sup, sig}. By default the last load or save.
+function changes(doc,ref){
+  ref=ref||doc.orig;
+  const c={moved:0,added:0,edited:0,removed:0};
+  Object.values(doc.nodes).forEach(n=>{ const o=ref[n.id]; if(!o) c.added++; else { if(o.sup!==n.sup) c.moved++; if(o.sig!==sig(n)) c.edited++; } });
+  Object.keys(ref).forEach(id=>{ if(!doc.nodes[id]) c.removed++; });
+  return c;
+}
+const refOf=doc=>{ const r={}; Object.values(doc.nodes).forEach(n=>{ r[n.id]={sup:n.sup,sig:sig(n)}; }); return r; };
+// A correction made in the baseline is copied into a scenario wherever the scenario still has what the baseline had:
+// an edited field, a new manager, a new seat (placed under the same manager), a removed seat. What the scenario
+// changed itself is left alone. was is the baseline's nodes from before the edit.
+const FIELDS=['title','person','hiring','loc','notes','start','end','tags'];
+function flow(was,base,doc){
+  const N=base.nodes, D=doc.nodes, home=n=>n.sup&&D[n.sup]?n.sup:'';
+  // Where id goes among pid's children: after the nearest earlier sibling (in the baseline) that the scenario also has there.
+  const at=(id,pid)=>{ const k=sibs(base,pid), to=sibs(doc,pid); for(let i=k.indexOf(id)-1;i>=0;i--){ const j=to.indexOf(k[i]); if(j>=0) return j+1; } return 0; };
+  Object.keys(was).forEach(id=>{ if(!N[id]&&D[id]) remove(doc,id); });
+  walk(base,n=>{ if(was[n.id]||D[n.id]) return; const pid=home(n);
+    D[n.id]={...n,sup:pid,extra:{...n.extra},kids:[]}; sibs(doc,pid).splice(at(n.id,pid),0,n.id); });
+  Object.keys(was).forEach(id=>{ const o=was[id], n=N[id], d=D[id]; if(!n||!d) return;
+    ['type',...FIELDS].forEach(f=>{ if(o[f]!==n[f]&&d[f]===o[f]) d[f]=n[f]; });
+    if(o.sup!==n.sup&&d.sup===o.sup){ const pid=home(n); if(pid!==d.sup&&!(pid&&isUnder(doc,pid,id))) move(doc,id,pid,at(id,pid)); }
+  });
+}
+// Skills file: one row per person per skill. Needs PersonID and Skill columns; Skill Group and Detail are optional.
+// A row with no PersonID still registers its skill, so skills nobody holds can be listed. list is an optional catalogue table.
+const headKey=h=>h.toLowerCase().replace(/\s+/g,'');
+const isSkillsHead=head=>{ const k=head.map(headKey); return k.includes('personid')&&k.includes('skill')&&!k.includes('supervisorid'); };
+function toSkills(table,name,list){
+  const find=(t,...ks)=>t.head.find(h=>ks.includes(headKey(h)));
+  const cId=find(table,'personid'), cSkill=find(table,'skill'), cGroup=find(table,'skillgroup','group'), cDetail=find(table,'detail');
+  if(!cId||!cSkill) throw new Error('Expected PersonID and Skill columns');
+  const rows=[], groups={}, seen=new Set();
+  if(list){ const lS=find(list,'skill'), lG=find(list,'skillgroup','group');
+    if(lS) list.rows.forEach(r=>{ const k=String(r[lS]||'').trim(); if(k&&!groups[k]) groups[k]=(lG&&r[lG])||'Other'; }); }
+  table.rows.forEach(r=>{ const id=String(r[cId]||'').trim(), skill=String(r[cSkill]||'').trim(); if(!skill) return;
+    if(!groups[skill]) groups[skill]=(cGroup&&r[cGroup])||'Other';
+    if(!id||seen.has(id+'\u0001'+skill)) return;
+    seen.add(id+'\u0001'+skill); rows.push({id,skill,detail:cDetail?r[cDetail]||'':''}); });
+  const sk={name:name||'skills',rows,groups}; sk.orig=skillSig(sk); return sk;
+}
+/* ---------- skills edits (each mutates the skills object in place) ---------- */
+const blankSkills=()=>({name:'',rows:[],groups:{},orig:[]});
+const skillSig=sk=>sk.rows.map(r=>r.id+'\u0001'+r.skill+'\u0001'+(r.detail||''));
+// How many person-skill rows differ from the loaded or last saved state.
+function skillChanges(sk){ const o=new Set(sk.orig||[]), c=new Set(skillSig(sk)); let n=0; c.forEach(k=>{ if(!o.has(k)) n++; }); o.forEach(k=>{ if(!c.has(k)) n++; }); return n; }
+function setSkill(sk,id,skill,on,detail){
+  const i=sk.rows.findIndex(r=>r.id===id&&r.skill===skill);
+  if(!on){ if(i>=0) sk.rows.splice(i,1); }
+  else if(i>=0){ if(detail!=null) sk.rows[i].detail=detail; }
+  else { if(!sk.groups[skill]) sk.groups[skill]='Other'; sk.rows.push({id,skill,detail:detail||''}); }
+}
+function addSkill(sk,name,group){ if(!sk.groups[name]) sk.groups[name]=group||'Other'; }
+// Renames and/or regroups a skill, keeping its place in the list. Renaming onto an existing skill merges the two.
+function editSkill(sk,old,name,group){
+  const g={}; Object.keys(sk.groups).forEach(k=>{ const nk=k===old?name:k; if(!(nk in g)) g[nk]=nk===name?(group||'Other'):sk.groups[k]; });
+  sk.groups=g;
+  const seen={}; sk.rows=sk.rows.filter(r=>{ if(r.skill===old) r.skill=name; const key=r.id+'\u0001'+r.skill, first=seen[key];
+    if(first){ if(!first.detail) first.detail=r.detail; return false; } seen[key]=r; return true; });
+}
+function dropSkill(sk,name){ delete sk.groups[name]; sk.rows=sk.rows.filter(r=>r.skill!==name); }
+// The Skills and Skill list sheets: only people on the charts (the baseline first, then seats only in a scenario),
+// in chart order, with names taken from the chart.
+function skillsTables(docs,sk){
+  const order=Object.keys(sk.groups), by={}, rows=[], done=new Set();
+  sk.rows.forEach(r=>{ (by[r.id]=by[r.id]||[]).push(r); });
+  docs.forEach(doc=>walk(doc,n=>{ if(n.type==='team'||!by[n.id]||done.has(n.id)) return; done.add(n.id);
+    by[n.id].slice().sort((a,b)=>order.indexOf(a.skill)-order.indexOf(b.skill)).forEach(r=>rows.push([n.id,n.person,sk.groups[r.skill]||'Other',r.skill,r.detail||''])); }));
+  return {skills:{head:['PersonID','Name','Skill Group','Skill','Detail'],rows},list:{head:['Skill Group','Skill'],rows:order.map(k=>[sk.groups[k],k])}};
+}
+
+/* ---------- cross-functional teams ---------- */
+// Teams that cut across the reporting line: squads, working groups, initiatives. Unlike skills, each chart (the baseline
+// and every scenario) keeps its own, so a scenario can plan who goes where:
+// doc.xf = {teams: [{name, group, purpose}] in display order, rows: [{id, team, role, pct}], orig (signature at load or save)}.
+// A person can be in several teams; pct is the share of their time a team gets, so a total over 100 is over-allocation.
+const blankXF=()=>({teams:[],rows:[],orig:[]});
+const xfSig=xf=>[...xf.teams.map(t=>['T',t.name,t.group,t.purpose].join('\u0001')),...xf.rows.map(r=>['M',r.id,r.team,r.role,r.pct].join('\u0001'))];
+// How many teams and memberships were added, removed or changed compared with a signature (the last load or save, or
+// another chart's). A changed allocation is one change, not a removal plus an addition.
+function xfChanges(xf,ref){
+  const by=sigs=>{ const m={}; sigs.forEach(k=>{ const f=k.split('\u0001'); m[f[0]==='T'?'T\u0001'+f[1]:'M\u0001'+f[1]+'\u0001'+f[2]]=k; }); return m; };
+  const o=by(ref||[]), c=by(xfSig(xf)); let n=0;
+  new Set([...Object.keys(o),...Object.keys(c)]).forEach(k=>{ if(o[k]!==c[k]) n++; }); return n;
+}
+// 50, "50%" and 0.5 (a cell formatted as a percentage) all mean half; blank means full time.
+const toPct=v=>{ const s=String(v??'').trim(); if(!s) return 100; let n=parseFloat(s.replace('%',''));
+  if(!Number.isFinite(n)) return 100; if(!/%/.test(s)&&n>0&&n<1) n*=100; return Math.max(0,Math.min(100,Math.round(n))); };
+const xfTeam=(xf,name)=>xf.teams.find(t=>t.name.toLowerCase()===String(name).toLowerCase());
+const xfAlloc=(xf,id)=>xf.rows.reduce((s,r)=>s+(r.id===id?r.pct:0),0);
+/* ---------- cross-functional edits (each mutates doc.xf in place) ---------- */
+function addXTeam(xf,name,group,purpose){ if(!xfTeam(xf,name)) xf.teams.push({name,group:group||'',purpose:purpose||''}); }
+// v: {name, group, purpose}. The dialog stops a rename onto another team's name.
+function editXTeam(xf,old,v){ const t=xf.teams.find(x=>x.name===old); if(!t) return; xf.rows.forEach(r=>{ if(r.team===old) r.team=v.name; }); Object.assign(t,v); }
+function dropXTeam(xf,name){ xf.teams=xf.teams.filter(t=>t.name!==name); xf.rows=xf.rows.filter(r=>r.team!==name); }
+// on adds the membership or updates it with v ({role, pct}); off removes it.
+function setMember(xf,id,team,on,v){
+  const i=xf.rows.findIndex(r=>r.id===id&&r.team===team);
+  if(!on){ if(i>=0) xf.rows.splice(i,1); }
+  else if(i>=0) Object.assign(xf.rows[i],v||{});
+  else xf.rows.push({id,team,role:'',pct:100,...v});
+}
+// Memberships for seats that are gone (or became teams), and for teams that are gone, go with them.
+function pruneXF(doc){ const x=doc.xf, names=new Set(x.teams.map(t=>t.name)), seat=id=>doc.nodes[id]&&doc.nodes[id].type!=='team';
+  x.rows=x.rows.filter(r=>seat(r.id)&&names.has(r.team)); }
+// The same rule as flow(): a change made in the baseline is copied into a scenario wherever the scenario still has what the
+// baseline had, so a scenario keeps its own plans. was is the baseline's xf from before the edit; xf is the scenario's.
+function flowXF(was,base,xf){
+  const J=JSON.stringify, mk=r=>r.id+'\u0001'+r.team;
+  const sync=(key,list)=>{ const by=x=>Object.fromEntries(x[list].map(v=>[key(v),v])), w=by(was), b=by(base), d=by(xf), to=xf[list];
+    [...new Set([...Object.keys(w),...Object.keys(b)])].forEach(k=>{ const o=w[k], n=b[k], x=d[k];
+      if(J(o)===J(n)||J(x)!==J(o)) return;
+      if(!n) to.splice(to.indexOf(x),1); else if(!x) to.push({...n}); else Object.assign(x,n); }); };
+  sync(t=>t.name,'teams'); sync(mk,'rows');
+}
+// The two workbook sheets. Each row says which chart it belongs to, so the baseline and every scenario round-trip.
+// list: [{name, doc}], the baseline first. Members are written in chart order.
+function xfTables(list){
+  const teams=[], members=[];
+  list.forEach(({name,doc})=>{ const x=doc.xf, order=x.teams.map(t=>t.name), by={};
+    x.teams.forEach(t=>teams.push([name,t.name,t.group,t.purpose]));
+    x.rows.forEach(r=>{ (by[r.id]=by[r.id]||[]).push(r); });
+    walk(doc,n=>{ if(n.type==='team'||!by[n.id]) return;
+      by[n.id].slice().sort((a,b)=>order.indexOf(a.team)-order.indexOf(b.team)).forEach(r=>members.push([name,n.id,n.person,r.team,r.role,String(r.pct)])); }); });
+  return {teams:{head:['Scenario','Team','Group','Purpose'],rows:teams},members:{head:['Scenario','PersonID','Name','Team','Role','Allocation %'],rows:members}};
+}
+// Reads those sheets into each chart's xf. A row's Scenario names its chart (blank or the baseline's name means the
+// baseline); without a Scenario column every row applies to every chart. A team named only in the members sheet is added.
+function toXF(tt,mt,list){
+  const find=(t,...ks)=>t&&t.head.find(h=>ks.includes(headKey(h)));
+  const docsFor=(t,r)=>{ const c=find(t,'scenario'); if(!c) return list.map(s=>s.doc); const v=String(r[c]||'').trim().toLowerCase();
+    return !v||v===list[0].name.toLowerCase()?[list[0].doc]:list.filter(s=>s.name.toLowerCase()===v).map(s=>s.doc); };
+  list.forEach(s=>{ s.doc.xf=blankXF(); });
+  const cT=find(tt,'team','name'), cG=find(tt,'group'), cP=find(tt,'purpose');
+  if(cT) tt.rows.forEach(r=>{ const name=String(r[cT]||'').trim(); if(name) docsFor(tt,r).forEach(d=>addXTeam(d.xf,name,cG&&r[cG],cP&&r[cP])); });
+  const cI=find(mt,'personid'), cM=find(mt,'team'), cR=find(mt,'role','roleinteam'), cA=find(mt,'allocation%','allocation','percent','pct','%');
+  if(cI&&cM) mt.rows.forEach(r=>{ const id=String(r[cI]||'').trim(), team=String(r[cM]||'').trim(); if(!id||!team) return;
+    docsFor(mt,r).forEach(d=>{ if(!d.nodes[id]||d.nodes[id].type==='team') return;
+      addXTeam(d.xf,team); const name=xfTeam(d.xf,team).name;
+      if(!d.xf.rows.some(x=>x.id===id&&x.team===name)) d.xf.rows.push({id,team:name,role:cR?r[cR]||'':'',pct:toPct(cA?r[cA]:'')}); }); });
+  list.forEach(s=>{ s.doc.xf.orig=xfSig(s.doc.xf); });
+}
+/*endcore*/
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const PALETTE=['#1C5C86','#2B7A58','#B8730F','#A8364B','#6E93B5','#8FB3A0','#D9A867','#7E6AA8','#4F8F8B','#C26B4C','#9A9AA3','#5B7F3B'];
+const STORE='orgcharter.session';
+// What the cards show (View > Show on cards). A per-browser preference, so it is kept apart from the chart.
+const SHOW_KEY=STORE+'.show', SHOW={title:true,badge:true,loc:true,tags:true,skills:true,dates:true,notes:true};
+try{ Object.assign(SHOW,JSON.parse(localStorage.getItem(SHOW_KEY)||'{}')); }catch(e){}
+// Role groups: every role falls in one of a few groups, each with a fixed colour, so a colour means the same thing on
+// every chart. The group comes from words in the role (first match wins, so "Quality Lead" is a lead and "Test &
+// Automation Engineer" is test), unless this browser has an override for that role (View > Role groups).
+const FAMS=[
+  {k:'lead',label:'Lead',mono:'LEAD',re:/\b(lead|leader|head|director|chief|cto|cio|cpo|vp|manager|em(\s*\d+)?)\b/i},
+  {k:'arch',label:'Architecture',mono:'ARCH',re:/architect/i},
+  {k:'test',label:'Test',mono:'TEST',re:/\b(test\w*|qa|quality)\b/i},
+  {k:'po',label:'Product',mono:'PO',re:/\b(product owner|product manager|business analyst|po|ba)\b/i},
+  {k:'ux',label:'Design',mono:'UX',re:/\b(ux|ui|design\w*|research\w*)\b/i},
+  {k:'dev',label:'Developer',mono:'DEV',re:/\b(develop\w*|engineer\w*|programmer|devops|sre)\b/i},
+  {k:'other',label:'Other',mono:'',re:null}];
+const FAM=Object.fromEntries(FAMS.map(f=>[f.k,f]));
+const FAM_KEY=STORE+'.families';
+let FAM_SET={}; try{ FAM_SET=JSON.parse(localStorage.getItem(FAM_KEY)||'{}')||{}; }catch(e){}
+// Group colours chosen in View > Role groups replace the standard ones in both themes. Badge text on each colour is
+// black or white, whichever reads better on it.
+const FAM_COLOR_KEY=STORE+'.familyColors';
+let FAM_COLOR={}; try{ FAM_COLOR=JSON.parse(localStorage.getItem(FAM_COLOR_KEY)||'{}')||{}; }catch(e){}
+const inkOn=hex=>{ const v=parseInt(hex.slice(1),16), c=[v>>16,v>>8&255,v&255].map(x=>{ x/=255; return x<=.03928?x/12.92:((x+.055)/1.055)**2.4; });
+  return .2126*c[0]+.7152*c[1]+.0722*c[2]>.36?'#172129':'#FFFFFF'; };
+function applyFamColors(map){
+  const st=document.documentElement.style;
+  FAMS.forEach(({k})=>{ const c=map[k]; if(c){ st.setProperty('--f-'+k,c); st.setProperty('--fi-'+k,inkOn(c)); } else { st.removeProperty('--f-'+k); st.removeProperty('--fi-'+k); } });
+}
+applyFamColors(FAM_COLOR);
+// A group's standard colour in the current theme, as #rrggbb for the colour picker.
+const stdColor=k=>{ const st=document.documentElement.style, was=st.getPropertyValue('--f-'+k); st.removeProperty('--f-'+k);
+  const v=getComputedStyle(document.documentElement).getPropertyValue('--f-'+k).trim(); if(was) st.setProperty('--f-'+k,was); return v; };
+const autoFam=role=>(FAMS.find(f=>f.re&&f.re.test(role))||FAM.other).k;
+const famOf=role=>FAM[FAM_SET[role]]?FAM_SET[role]:autoFam(role);
+// Roles ordered leads first, then by org-wide headcount (the Headcount tables use this order); each takes its group's colour.
+function roleColors(P){
+  const c={};P.forEach(n=>{c[n.roleName]=(c[n.roleName]||0)+1;});
+  const lead=new Set(P.filter(n=>n.isLead).map(n=>n.roleName));
+  const roles=Object.keys(c).sort((a,b)=>(lead.has(b)-lead.has(a))||c[b]-c[a]||a.localeCompare(b));
+  const color={}; roles.forEach(r=>{ color[r]=`var(--f-${famOf(r)})`; });
+  return {roles,color,lead};
+}
+// A stacked bar of the role groups among some people, one segment per group; clicking a segment spotlights that group.
+function famBar(ps){
+  const c={}; ps.forEach(p=>{ c[p.family]=(c[p.family]||0)+1; }); const ks=FAMS.filter(f=>c[f.k]);
+  if(!ks.length) return '';
+  return `<div class="fbar" role="group" aria-label="Role groups: ${ks.map(f=>c[f.k]+' '+f.label).join(', ')}">`+ks.map(f=>{ const roles={};
+    ps.forEach(p=>{ if(p.family===f.k) roles[p.roleName]=(roles[p.roleName]||0)+1; });
+    return `<button class="fam-${f.k}${F.sel.family.has(f.label)?' on':''}" style="flex:${c[f.k]}" data-dim="family" data-val="${f.label}" title="${f.label} ${c[f.k]}: ${esc(Object.entries(roles).map(([r,n])=>r+' '+n).join(', '))}. Click to spotlight."></button>`; }).join('')+'</div>'; }
+
+/* ---------- state ---------- */
+const S={many:new Set(),showDiff:true,plan:null,doc:null,ref:{},skills:null,SK:{by:{},missing:[]},D:null,colors:null,undo:[],redo:[],sel:null,collapsed:new Set(),tab:'chart',headDirty:true,view:'org'};
+// Which layout the chart uses: the reporting line ('org') or the cross-functional teams ('logical'). A per-browser preference.
+const VIEW_KEY=STORE+'.view';
+try{ if(localStorage.getItem(VIEW_KEY)==='logical') S.view='logical'; }catch(e){}
+const V={x:0,y:0,k:1};
+const vp=$('#vp'), cv=$('#canvas'), ins=$('#ins');
+
+/* ---------- scenarios ---------- */
+// The plan holds the baseline (list[0], the chart as it is) and any number of named scenarios, each a full copy of the
+// chart. S.doc is always the one on screen, so everything else works on it unchanged. Skills are shared by all of them.
+// IDs are kept unique across the plan, so an ID means the same seat in every scenario.
+const BASE='Baseline', SCN_PREFIX='Scenario - ', SCN_MAX=31-SCN_PREFIX.length;   // a scenario is saved as a sheet; Excel allows 31 characters
+const baseDoc=()=>S.plan.list[0].doc;
+const inScenario=()=>S.plan.cur>0;
+const scName=()=>S.plan.list[S.plan.cur].name;
+const allDocs=()=>S.plan.list.map(s=>s.doc);
+const takenIds=()=>{ const t=new Set(); allDocs().forEach(d=>{ Object.keys(d.nodes).forEach(i=>t.add(i)); Object.keys(d.orig).forEach(i=>t.add(i)); }); return t; };
+const onAnyChart=id=>S.plan.list.some(s=>s.doc.nodes[id]);
+
+// One history for the whole plan and the skills, so an undo never leaves them out of step; undoing also goes back to the
+// scenario the change was made in. A chart a step did not touch reuses the previous step's text, to save memory.
+function snap(){
+  const top=S.undo[S.undo.length-1], reuse=s=>top&&(top.docs.find(x=>x===s)||(top.skills===s&&top.skills))||s;
+  return {cur:S.plan.cur,names:S.plan.list.map(s=>s.name),docs:S.plan.list.map(s=>reuse(JSON.stringify(s.doc))),skills:reuse(JSON.stringify(S.skills))};
+}
+function commit(fn){
+  S.undo.push(snap()); if(S.undo.length>200) S.undo.shift();
+  S.redo=[];
+  const base=baseDoc(), was=!inScenario()&&S.plan.list.length>1?structuredClone(base.nodes):null, wasX=was&&structuredClone(base.xf), had=new Set(allDocs().flatMap(d=>Object.keys(d.nodes)));
+  fn();
+  if(was&&baseDoc()===base&&!inScenario()) S.plan.list.slice(1).forEach(s=>{ flow(was,base,s.doc); flowXF(wasX,base.xf,s.doc.xf); });
+  // Skills go with a seat once it is on none of the charts; cross-functional memberships as soon as it leaves that chart.
+  const gone=new Set([...had].filter(id=>!onAnyChart(id))); if(gone.size) S.skills.rows=S.skills.rows.filter(r=>!gone.has(r.id));
+  allDocs().forEach(pruneXF);
+  refresh();
+}
+function step(from,to){
+  if(!from.length) return; to.push(snap()); const x=from.pop();
+  S.plan={cur:x.cur,list:x.names.map((name,i)=>({name,doc:JSON.parse(x.docs[i])}))}; S.skills=JSON.parse(x.skills); refresh();
+}
+// Joins the skills rows to the people on the chart by PersonID. Rows for anyone on none of the charts are counted, not shown.
+function indexSkills(){
+  const by={}, miss=new Set();
+  S.D.people.forEach(p=>{ p.skills=[]; });
+  S.skills.rows.forEach(r=>{ const p=S.D.info[r.id]; if(!p){ if(!onAnyChart(r.id)) miss.add(r.id); return; } (by[r.id]=by[r.id]||[]).push(r); p.skills.push(r.skill); });
+  S.SK={by,missing:[...miss]};
+  $('#pfskillwrap').classList.toggle('hidden',!Object.keys(S.skills.groups).length); $('#rmskills').classList.toggle('hidden',!S.skills.rows.length);
+}
+const skillGroups=()=>S.skills?[...new Set(Object.values(S.skills.groups))]:[];
+// Each person's cross-functional memberships on the chart on screen, and their total allocation.
+const NO_XT='Not in a cross-functional team';
+function indexXF(){
+  S.D.people.forEach(p=>{ p.xf=[]; p.alloc=0; });
+  S.doc.xf.rows.forEach(r=>{ const p=S.D.info[r.id]; if(p){ p.xf.push(r); p.alloc+=r.pct; } });
+  const any=allDocs().some(d=>d.xf.teams.length);
+  $('#pfxwrap').classList.toggle('hidden',!any);
+}
+// Where a person sits in the reporting line, in a few words.
+const homeOf=p=>p.team===NO_TEAM?p.stream:p.team;
+// The share of their time a new membership starts with: whatever is not yet allocated, or all of it.
+const freePct=id=>{ const a=xfAlloc(S.doc.xf,id); return a>0&&a<100?100-a:100; };
+const stays=p=>!p.endISO&&!p.leaving;
+const tagChip=(t,inner)=>`<span class="tag tg" style="--tc:${S.tagc[t]||'var(--line)'}">${esc(t)}${inner||''}</span>`;
+function refresh(){
+  const P=S.plan; if(P.cur>=P.list.length) P.cur=0;
+  P.list.forEach(s=>{ if(!s.doc.xf) s.doc.xf=blankXF(); });   // charts from before cross-functional teams
+  S.doc=P.list[P.cur].doc; S.ref=P.cur?refOf(baseDoc()):S.doc.orig;
+  S.D=derive(S.doc); S.D.people.forEach(p=>{ p.family=famOf(p.roleName); }); S.colors=roleColors(S.D.people); indexSkills(); indexXF();
+  S.tagc={}; allTags(S.doc).forEach((t,i)=>{ S.tagc[t]=PALETTE[i%PALETTE.length]; });
+  $('#pftagwrap').classList.toggle('hidden',!Object.keys(S.tagc).length);
+  setSel([...S.many].filter(id=>S.doc.nodes[id]),S.doc.nodes[S.sel]?S.sel:undefined);
+  renderHL(); renderChart(); S.headDirty=true; if(S.tab!=='chart') renderHead(); if(S.tab==='skills') renderSkills();
+  renderScen(); if(S.tab==='compare') P.list.length>1?renderCompare():setTab('chart');
+  updateBar();
+  try{ localStorage.setItem(STORE,JSON.stringify(P)); localStorage.setItem(SKSTORE,JSON.stringify(S.skills)); }catch(e){}
+}
+// In a scenario the change count is measured against the baseline; in the baseline, against the last load or save.
+function updateBar(){
+  const d=S.doc, sc=inScenario(), c=changes(d,S.ref), all=Object.values(d.nodes), teams=all.filter(n=>n.type==='team').length;
+  const parts=[c.moved&&c.moved+' moved',c.added&&c.added+' added',c.edited&&c.edited+' edited',c.removed&&c.removed+' removed'].filter(Boolean);
+  const sn=sc?0:skillChanges(S.skills), xn=xfChanges(d.xf,sc?xfSig(baseDoc().xf):d.xf.orig), n=c.moved+c.added+c.edited+c.removed+sn+xn, st=$('#status');
+  if(sn) parts.push(sn+' skill change'+(sn>1?'s':''));
+  if(xn) parts.push(xn+' cross-functional change'+(xn>1?'s':''));
+  st.textContent=baseDoc().name+' · '+(sc?scName()+' · '+(n?n+' change'+(n>1?'s':'')+' from the baseline':'same as the baseline'):n?n+' change'+(n>1?'s':''):S.undo.length!==S.base?'unsaved changes':'no changes');   // reordering, or work in scenarios
+  st.title=`${all.length-teams} seats in ${teams} teams`+(S.skills.rows.length?` · ${S.skills.rows.length} skill rows for ${Object.keys(S.SK.by).length} people`:'')+
+    (parts.length?' · '+parts.join(', ')+(sc?' compared with the baseline':' since the last load or save'):'')+(S.SK.missing.length?` · ${S.SK.missing.length} PersonIDs with skills are not on the chart`:'');
+  $('#scinfo').textContent=sc?'· '+(parts.length?parts.join(', ')+(S.showDiff?' · faded cards show where people were in the baseline':''):'no changes yet'):'';
+  $('#scdiff').textContent=S.showDiff?'Hide changes':'Show changes';
+  $('#undo').disabled=!S.undo.length; $('#redo').disabled=!S.redo.length;
+  placeSel(); renderPanel();
+}
+// With a person selected the panel lists their skills; with a team selected, the skills held across that team.
+// Any skill in it can be clicked to highlight everyone who has it. "Edit skills" turns a person's list into tick boxes,
+// and stays on as you click from person to person.
+function renderPanel(){
+  const el=$('#skpanel'), n=S.doc&&S.sel&&S.doc.nodes[S.sel];
+  el.classList.toggle('hidden',!n); if(!n) return;
+  if(isMulti()) return renderMulti(el);
+  const chip=(k,extra)=>`<button class="chip${F.sel.skill.has(k)?' on':''}" data-dim="skill" data-val="${esc(k)}" title="Highlight everyone with this skill">${esc(k)}${extra}</button>`;
+  const G=S.skills.groups, block=(g,html)=>html?`<div class="hlabel">${esc(g)}</div><div class="hgroup">${html}</div>`:'';
+  const top=el.scrollTop, typing=document.activeElement&&document.activeElement.id==='skq';
+  let html;
+  if(n.type==='team'){
+    const seats=[]; (function go(x){ x.kids.forEach(k=>{ const p=S.D.info[k]; if(p&&!p.vacant) seats.push(p); go(S.doc.nodes[k]); }); })(n);
+    const c={}; seats.forEach(p=>p.skills.forEach(k=>{ c[k]=(c[k]||0)+1; }));
+    html=`<h4>${esc(n.title||'(unnamed team)')}</h4><div class="sub2">${seats.length} people · skills held in this team</div>`+
+      (skillGroups().map(g=>block(g,Object.keys(c).filter(k=>G[k]===g).sort((a,b)=>c[b]-c[a]||a.localeCompare(b)).map(k=>chip(k,` <b>${c[k]}</b>`)).join(''))).join('')||'<div class="hlabel">No skills recorded.</div>');
+  }else{
+    const rows=S.SK.by[n.id]||[], has={}; rows.forEach(r=>{ has[r.skill]=r; });
+    const mine=S.D.info[n.id].tags, low=mine.map(t=>t.toLowerCase());
+    html=`<h4>${esc(n.person||'(no name)')}</h4><div class="sub2">${esc(n.title)}</div><div class="hlabel">Tags</div><div class="hgroup">`+
+      mine.map(t=>tagChip(t,` <button class="x" data-untag="${esc(t)}" title="Remove this tag" aria-label="Remove tag ${esc(t)}">×</button>`)).join('')+
+      Object.keys(S.tagc).filter(t=>!low.includes(t.toLowerCase())).map(t=>`<button class="chip" data-addtag="${esc(t)}" title="Add this tag">+ ${esc(t)}</button>`).join('')+
+      `</div><input type="text" id="tagq" placeholder="New tag, then Enter" aria-label="New tag">`+xfPanel(n.id);
+    if(S.editSk) html+=`<div class="skedit"><input type="search" id="skq" placeholder="Find a skill…" aria-label="Find a skill" value="${esc(S.skq||'')}"><button class="tb" data-skedit="0">Done</button></div>`+
+      skillGroups().map(g=>`<div class="skg"><div class="hlabel">${esc(g)}</div>`+Object.keys(G).filter(k=>G[k]===g).map(k=>`<label class="skrow" data-name="${esc(k.toLowerCase())}"><input type="checkbox" data-sk="${esc(k)}"${has[k]?' checked':''}><span>${esc(k)}</span>`+
+        (has[k]?`<input type="text" class="skd" data-skd="${esc(k)}" value="${esc(has[k].detail||'')}" placeholder="detail" aria-label="Detail for ${esc(k)}">`:'')+'</label>').join('')+'</div>').join('')+
+      '<button class="tb pedit" data-sknew="1">+ New skill…</button>';
+    else html+=(skillGroups().map(g=>block(g,rows.filter(r=>G[r.skill]===g).map(r=>chip(r.skill,r.detail?` <b>(${esc(r.detail)})</b>`:'')).join(''))).join('')||'<div class="hlabel">No skills recorded.</div>')+
+      '<div><button class="tb pedit" data-skedit="1">Edit skills</button></div>';
+  }
+  el.innerHTML=html; el.scrollTop=top; filterSkillRows();
+  if(typing&&$('#skq')){ const q=$('#skq'); q.focus(); q.setSelectionRange(q.value.length,q.value.length); }
+}
+// A person's cross-functional teams: each with its share of their time and their role in it, and a list to add another.
+function xfPanel(id){
+  const x=S.doc.xf, p=S.D.info[id], mine=new Set(p.xf.map(r=>r.team));
+  const rows=p.xf.slice().sort((a,b)=>x.teams.findIndex(t=>t.name===a.team)-x.teams.findIndex(t=>t.name===b.team)).map(r=>`<div class="xrow">`+
+    `<button class="lnk" data-dim="xteam" data-val="${esc(r.team)}" title="Highlight this team's members">${esc(r.team)}</button>`+
+    `<input type="text" class="xrole" data-xrole="${esc(r.team)}" value="${esc(r.role)}" placeholder="role" aria-label="Role in ${esc(r.team)}">`+
+    `<input type="number" class="xpct" data-xpct="${esc(r.team)}" value="${r.pct}" min="0" max="100" step="5" aria-label="Allocation to ${esc(r.team)}, percent">%`+
+    `<button class="x" data-xrm="${esc(r.team)}" title="Take them out of this team" aria-label="Remove from ${esc(r.team)}">×</button></div>`).join('');
+  const free=x.teams.filter(t=>!mine.has(t.name));
+  return `<div class="hlabel">Cross-functional teams${p.alloc?` · <span class="${p.alloc>100?'over':''}" title="${p.alloc>100?'Over-allocated: more than all of their time':'Share of their time given to cross-functional teams'}">${p.alloc}% allocated</span>`:''}</div>`+rows+
+    `<select class="tb" id="xjoin" aria-label="Add to a cross-functional team"><option value="">Add to a team…</option>`+
+    free.map(t=>`<option value="${esc(t.name)}">${esc(t.name)}${t.group?' · '+esc(t.group):''}</option>`).join('')+'<option value="\u0001new">New team…</option></select>';
+}
+function filterSkillRows(){ const q=(S.skq||'').trim().toLowerCase(); document.querySelectorAll('#skpanel .skrow').forEach(r=>{ r.style.display=!q||r.dataset.name.includes(q)?'':'none'; });
+  document.querySelectorAll('#skpanel .skg').forEach(g=>{ g.style.display=[...g.querySelectorAll('.skrow')].some(r=>!r.style.display)?'':'none'; }); }
+$('#skpanel').addEventListener('click',e=>{
+  const mt=e.target.closest('[data-mtag]'), ms=e.target.closest('[data-msk]'), mx=e.target.closest('[data-mxt]'), xr=e.target.closest('[data-xrm]');
+  if(mt) return bulkTag(mt.dataset.mtag);
+  if(ms) return bulkSkill(ms.dataset.msk);
+  if(mx) return bulkXT(mx.dataset.mxt);
+  if(xr){ const id=S.sel; return commit(()=>setMember(S.doc.xf,id,xr.dataset.xrm,false)); }
+  if(e.target.closest('[data-medit]')) return openEdit();
+  if(e.target.closest('[data-mclear]')) return select(null);
+  const b=e.target.closest('[data-skedit]');
+  if(b){ S.editSk=b.dataset.skedit==='1'; S.skq=''; renderPanel(); }
+  else if(e.target.closest('[data-sknew]')) openSkillDlg(null,S.sel);
+  else{ const t=e.target.closest('[data-untag],[data-addtag]'), id=S.sel;
+    if(t) commit(()=>setTag(S.doc,id,t.dataset.untag||t.dataset.addtag,!!t.dataset.addtag)); }
+});
+$('#skpanel').addEventListener('keydown',e=>{
+  if(e.target.id==='mtagq'&&e.key==='Enter'){ const ids=selSeats(), ts=tagList(e.target.value);
+    if(ts.length) commit(()=>ids.forEach(id=>ts.forEach(t=>setTag(S.doc,id,t,true)))); if($('#mtagq')) $('#mtagq').focus(); return; }
+  if(e.target.id!=='tagq'||e.key!=='Enter') return;
+  const id=S.sel, ts=tagList(e.target.value); if(ts.length) commit(()=>ts.forEach(t=>setTag(S.doc,id,t,true)));
+  if($('#tagq')) $('#tagq').focus();
+});
+$('#skpanel').addEventListener('input',e=>{ if(e.target.id==='skq'){ S.skq=e.target.value; filterSkillRows(); } });
+$('#skpanel').addEventListener('change',e=>{
+  const t=e.target, id=S.sel;
+  if(t.id==='mskadd'){ const k=t.value, ids=selSeats(); if(k) commit(()=>ids.forEach(i=>setSkill(S.skills,i,k,true))); return; }
+  if(t.id==='xjoin'||t.id==='mxjoin'){ const ids=t.id==='xjoin'?[id]:selSeats(), v=t.value; t.value='';
+    if(v==='\u0001new') return openXDlg(null,{tickFor:ids}); if(v) commit(()=>ids.forEach(i=>setMember(S.doc.xf,i,v,true,{pct:freePct(i)}))); return; }
+  if(t.dataset.xpct!=null){ const v=toPct(t.value); return commit(()=>setMember(S.doc.xf,id,t.dataset.xpct,true,{pct:v})); }
+  if(t.dataset.xrole!=null) return commit(()=>setMember(S.doc.xf,id,t.dataset.xrole,true,{role:t.value.trim()}));
+  if(t.dataset.sk) commit(()=>setSkill(S.skills,id,t.dataset.sk,t.checked));
+  else if(t.dataset.skd) commit(()=>setSkill(S.skills,id,t.dataset.skd,true,t.value.trim()));
+});
+// Add a skill to the list, or rename, regroup or delete one. tickFor gives a new skill to that person straight away.
+const sdlg=$('#sdlg'), sform=$('#sform'); let sdCtx=null;
+function openSkillDlg(skill,tickFor){
+  sdCtx={skill,tickFor};
+  const held=skill?new Set(S.skills.rows.filter(r=>r.skill===skill).map(r=>r.id)).size:0;
+  $('#sdh').textContent=skill?'Edit skill':'New skill'; sform.skill.value=skill||''; sform.group.value=skill?S.skills.groups[skill]:(skillGroups()[0]||'');
+  $('#sgroups').innerHTML=skillGroups().map(g=>`<option value="${esc(g)}">`).join('');
+  $('#sdnote').textContent=skill?(held?`Held by ${held} ${held>1?'people':'person'}. Renaming it to an existing skill merges the two.`:'Nobody holds this skill.'):'';
+  $('#sddel').classList.toggle('hidden',!skill);
+  sdlg.returnValue=''; sdlg.showModal(); sform.skill.select();
+}
+sdlg.addEventListener('close',()=>{
+  const {skill,tickFor}=sdCtx||{}, name=sform.skill.value.trim().replace(/\s+/g,' '), group=sform.group.value.trim()||'Other';
+  if(sdlg.returnValue==='del'&&skill) return commit(()=>{ dropSkill(S.skills,skill); F.sel.skill.delete(skill); });
+  if(sdlg.returnValue!=='ok'||!name) return;
+  if(skill&&name===skill&&group===S.skills.groups[skill]) return;
+  commit(()=>{
+    if(skill){ editSkill(S.skills,skill,name,group); if(F.sel.skill.delete(skill)) F.sel.skill.add(name); }
+    else addSkill(S.skills,name,group);
+    if(tickFor&&S.doc.nodes[tickFor]) setSkill(S.skills,tickFor,name,true);
+  });
+});
+// Add a cross-functional team, or rename, regroup or delete one. A rename keeps its members. ctx: {group} to start a new
+// team in that group, {tickFor: [ids]} to put those people in it straight away.
+const xdlg=$('#xdlg'), xform=$('#xform'); let xdCtx=null;
+function openXDlg(name,ctx){
+  const x=S.doc.xf, t=name!=null&&x.teams.find(u=>u.name===name), f=xform.xname; xdCtx={name:t?t.name:null,...ctx};
+  const n=t?x.rows.filter(r=>r.team===t.name).length:0;
+  $('#xdh').textContent=t?'Edit cross-functional team':'New cross-functional team';
+  f.value=t?t.name:''; xform.xgroup.value=t?t.group:(ctx&&ctx.group)||''; xform.xpurpose.value=t?t.purpose:'';
+  $('#xgroups').innerHTML=[...new Set(x.teams.map(u=>u.group).filter(Boolean))].map(g=>`<option value="${esc(g)}">`).join('');
+  $('#xdnote').textContent=t?(n?`${n} member${n>1?'s':''}. Deleting the team takes them out of it; it changes nothing in the reporting line.`:'Nobody is in this team yet.')
+    :inScenario()?`It is added to ${scName()} only.`:S.plan.list.length>1?'It is added to the baseline, and to the scenarios that have not changed their teams.':'';
+  $('#xddel').classList.toggle('hidden',!t);
+  f.oninput=()=>{ const v=f.value.trim(), o=v&&xfTeam(x,v); f.setCustomValidity(!v?'Give it a name':o&&o!==t?'There is already a team with this name':''); }; f.oninput();
+  xdlg.returnValue=''; xdlg.showModal(); f.select();
+}
+xdlg.addEventListener('close',()=>{
+  const {name,tickFor}=xdCtx||{}, v={name:xform.xname.value.trim().replace(/\s+/g,' '),group:xform.xgroup.value.trim().replace(/\s+/g,' '),purpose:xform.xpurpose.value.trim()};
+  if(xdlg.returnValue==='del'&&name) return commit(()=>{ dropXTeam(S.doc.xf,name); F.sel.xteam.delete(name); });
+  if(xdlg.returnValue!=='ok'||!v.name) return;
+  const t=name&&S.doc.xf.teams.find(u=>u.name===name);
+  if(t&&['name','group','purpose'].every(k=>t[k]===v[k])) return;
+  commit(()=>{
+    if(t){ editXTeam(S.doc.xf,name,v); if(F.sel.xteam.delete(name)) F.sel.xteam.add(v.name);
+      if(S.collapsed.delete('xt:'+name)) S.collapsed.add('xt:'+v.name); }
+    else addXTeam(S.doc.xf,v.name,v.group,v.purpose);
+    (tickFor||[]).forEach(id=>{ if(S.doc.nodes[id]) setMember(S.doc.xf,id,v.name,true,{pct:freePct(id)}); });
+  });
+});
+document.addEventListener('click',e=>{
+  const a=e.target.closest('[data-xadd]'), ed=e.target.closest('[data-xedit]');
+  if(a) openXDlg(null,{group:a.dataset.xadd}); else if(ed) openXDlg(ed.dataset.xedit);
+});
+// Which group each role is in. Every role on any chart is listed, those on the chart in view with their seat count.
+// A role left on its worked-out group is not stored, so a better title match later still applies to it.
+const fdlg=$('#fdlg'), fform=$('#fform');
+function openFamDlg(){
+  const n={}; S.D.people.forEach(p=>{ n[p.roleName]=(n[p.roleName]||0)+1; });
+  const roles=[...new Set(allDocs().flatMap(d=>Object.values(d.nodes).filter(x=>x.type!=='team').map(x=>roleName(x.title))))].filter(Boolean)
+    .sort((a,b)=>FAMS.findIndex(f=>f.k===famOf(a))-FAMS.findIndex(f=>f.k===famOf(b))||(n[b]||0)-(n[a]||0)||a.localeCompare(b));
+  $('#fbody').innerHTML=roles.map(r=>{ const auto=autoFam(r), set=FAM[FAM_SET[r]]?FAM_SET[r]:'';
+    return `<tr><td>${esc(r)}</td><td class="n">${n[r]||'·'}</td><td><select data-role="${esc(r)}" class="${set?'':'auto'}" aria-label="Group for ${esc(r)}">`+
+      `<option value="">${FAM[auto].label} (from title)</option>`+FAMS.map(f=>`<option value="${f.k}"${set===f.k?' selected':''}>${f.label}</option>`).join('')+'</select></td></tr>'; }).join('');
+  famPending={...FAM_COLOR}; renderFamColors();
+  fdlg.returnValue=''; fdlg.showModal();
+}
+// Colours being picked: shown on the chart straight away, kept on Save, put back on Cancel.
+let famPending={};
+function renderFamColors(){
+  $('#fcols').innerHTML=FAMS.map(f=>{ const c=famPending[f.k]||stdColor(f.k);
+    return `<label class="fcol fam-${f.k}" style="--fci:${inkOn(c)}"><input type="color" id="fc-${f.k}" data-fam="${f.k}" value="${c}" aria-label="${f.label} colour">`+
+      `<span class="lbl">${f.label}</span>${f.mono?`<span class="mono">${f.mono}</span>`:''}`+
+      (famPending[f.k]?`<button type="button" class="undo" data-famstd="${f.k}" title="Use the standard colour">Standard</button>`:'')+'</label>'; }).join('');
+}
+$('#fcols').addEventListener('input',e=>{ const k=e.target.dataset.fam; if(!k) return;
+  famPending[k]=e.target.value; applyFamColors(famPending); e.target.closest('.fcol').style.setProperty('--fci',inkOn(e.target.value)); });
+$('#fcols').addEventListener('change',e=>{ if(e.target.dataset.fam) renderFamColors(); });
+$('#fcols').addEventListener('click',e=>{ const b=e.target.closest('[data-famstd]'); if(!b) return; e.preventDefault();
+  delete famPending[b.dataset.famstd]; applyFamColors(famPending); renderFamColors(); });
+$('#fbody').addEventListener('change',e=>{ if(e.target.dataset.role!=null) e.target.classList.toggle('auto',!e.target.value); });
+fdlg.addEventListener('close',()=>{
+  if(fdlg.returnValue==='reset'){ FAM_SET={}; FAM_COLOR={}; }
+  else if(fdlg.returnValue==='ok'){ FAM_SET={}; fform.querySelectorAll('select[data-role]').forEach(s=>{ if(s.value&&s.value!==autoFam(s.dataset.role)) FAM_SET[s.dataset.role]=s.value; }); FAM_COLOR={...famPending}; }
+  else return applyFamColors(FAM_COLOR);
+  applyFamColors(FAM_COLOR);
+  try{ localStorage.setItem(FAM_KEY,JSON.stringify(FAM_SET)); localStorage.setItem(FAM_COLOR_KEY,JSON.stringify(FAM_COLOR)); }catch(e){}
+  refresh();
+});
+$('#famedit').onclick=openFamDlg;
+document.addEventListener('click',e=>{ if(e.target.closest('[data-famedit]')) openFamDlg(); });
+function setView(v){
+  S.view=v; try{ localStorage.setItem(VIEW_KEY,v); }catch(e){}
+  document.body.classList.toggle('lx',v==='logical');
+  document.querySelectorAll('#viewsw button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  $('#sortall').classList.toggle('hidden',v==='logical'); $('#xmenu').classList.toggle('hidden',v!=='logical');
+  if(S.doc){ renderChart(); placeSel(); fit(); }
+}
+document.querySelectorAll('#viewsw button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+setView(S.view);
+// The action strip only exists while something is selected. It is docked at the top of the chart, not beside the
+// selection: beside it, the strip covered neighbouring cards and got in the way of dragging them.
+const selbar=$('#selbar');
+function placeSel(){
+  const n=S.doc&&S.sel&&S.doc.nodes[S.sel], show=!!n&&S.tab==='chart'&&!drag, m=isMulti();
+  selbar.classList.toggle('hidden',!show);
+  ['#addseat','#addteam','#sortsel','#convert'].forEach(s=>$(s).classList.toggle('hidden',m||S.view==='logical'));   // reporting-line edits
+  if(show&&!m){ const t=n.type==='team', c=$('#convert');
+    c.textContent=t?'→ Person':'→ Team';
+    c.title=t?'Turn this team into a person, so it is drawn as a card with what is under it as reports':'Turn this person into a team, with their reports as its members'; }
+  if(show) $('#sellabel').textContent=m?S.many.size+' selected':n.type==='team'?(n.title||'(unnamed team)'):(n.person||n.title||'(no name)');
+}
+// S.many is everything selected; S.sel is the one single-item actions use (the last one picked). Edit, Delete, drag and the
+// side panel act on all of S.many when it holds more than one.
+const isMulti=()=>S.many.size>1;
+const selIds=()=>S.sel?[...S.many]:[];
+const selSeats=()=>selIds().filter(id=>S.doc.nodes[id]&&S.doc.nodes[id].type!=='team');
+function setSel(ids,primary){
+  S.many=new Set(ids); S.sel=primary!==undefined?primary:ids.length?ids[ids.length-1]:null;
+  if(S.sel) S.many.add(S.sel); else S.many.clear();
+}
+// add (Ctrl or Shift held) toggles id in the selection instead of replacing it.
+function select(id,add){
+  if(add&&id){ const m=[...S.many]; if(S.many.has(id)){ const rest=m.filter(x=>x!==id); setSel(rest,S.sel===id?rest[rest.length-1]||null:S.sel); } else setSel([...m,id],id); }
+  else setSel(id?[id]:[]);
+  markSel(); updateBar();
+}
+function markSel(){ cv.querySelectorAll('.sel').forEach(e=>e.classList.remove('sel'));
+  S.many.forEach(id=>cv.querySelectorAll(`[data-id="${CSS.escape(id)}"]`).forEach(e=>(e.closest('.thead')?e.parentElement:e).classList.add('sel'))); }   // the logical layout can list someone more than once
+// Ctrl+A and "Select these": every seat that matches the highlight, or every seat when nothing is highlighted.
+function selectAll(){ setSel((hlActive()?S.D.people.filter(hlMatch):S.D.people).map(p=>p.id)); markSel(); updateBar(); }
+$('#hlsel').onclick=selectAll;
+// The side panel for several seats: each tag and skill with how many of them have it. Clicking gives it to all of them,
+// or takes it from all of them when they all have it already.
+function renderMulti(el){
+  const ids=selSeats(), n=ids.length, teams=S.many.size-n, info=S.D.info, G=S.skills.groups, tc={}, sc={};
+  ids.forEach(id=>{ info[id].tags.forEach(t=>{ tc[t]=(tc[t]||0)+1; }); (info[id].skills||[]).forEach(k=>{ sc[k]=(sc[k]||0)+1; }); });
+  const chip=(attr,k,c)=>`<button class="chip${c===n?' on':c?' part':''}" ${attr}="${esc(k)}" title="${c===n?'All of them have it: click to remove it from all':c?`${c} of ${n} have it: click to give it to all`:'Click to give it to all'}">${esc(k)}${c?` <b>${c}/${n}</b>`:''}</button>`;
+  let html=`<h4>${S.many.size} selected</h4><div class="sub2">${n} seat${n===1?'':'s'}${teams?` · ${teams} team${teams>1?'s':''}, which tags and skills leave alone`:''}</div>`;
+  if(n){
+    html+=`<div class="hlabel">Tags</div><div class="hgroup">${Object.keys(S.tagc).map(t=>chip('data-mtag',t,tc[t]||0)).join('')}</div>`+
+      '<input type="text" id="mtagq" placeholder="New tag for all of them, then Enter" aria-label="New tag for all selected">';
+    const XT=S.doc.xf.teams, xc={}; ids.forEach(id=>info[id].xf.forEach(r=>{ xc[r.team]=(xc[r.team]||0)+1; }));
+    if(XT.length) html+=`<div class="hlabel">Cross-functional teams</div><div class="hgroup">${XT.map(t=>chip('data-mxt',t.name,xc[t.name]||0)).join('')}</div>`;
+    html+=`<select class="tb" id="mxjoin" aria-label="Add all selected to a cross-functional team"><option value="">Add all of them to a team…</option>`+
+      XT.filter(t=>xc[t.name]!==n).map(t=>`<option value="${esc(t.name)}">${esc(t.name)}</option>`).join('')+'<option value="\u0001new">New team…</option></select>';
+    html+=skillGroups().map(g=>{ const ks=Object.keys(sc).filter(k=>G[k]===g).sort((a,b)=>sc[b]-sc[a]||a.localeCompare(b));
+      return ks.length?`<div class="hlabel">${esc(g)}</div><div class="hgroup">${ks.map(k=>chip('data-msk',k,sc[k])).join('')}</div>`:''; }).join('')||(skillGroups().length?'<div class="hlabel">No skills recorded.</div>':'');
+    if(skillGroups().length) html+=`<select class="tb" id="mskadd" aria-label="Give a skill to all selected"><option value="">Give all of them a skill…</option>`+
+      skillGroups().map(g=>`<optgroup label="${esc(g)}">${Object.keys(G).filter(k=>G[k]===g&&sc[k]!==n).map(k=>`<option>${esc(k)}</option>`).join('')}</optgroup>`).join('')+'</select>';
+  }
+  el.innerHTML=html+`<div class="mrow">${n?'<button class="tb" data-medit="1">Edit details…</button>':''}<button class="tb" data-mclear="1">Clear selection</button></div>`;
+}
+function bulkTag(t){ const ids=selSeats(), lt=t.toLowerCase(), all=ids.every(id=>S.D.info[id].tags.some(x=>x.toLowerCase()===lt));
+  commit(()=>ids.forEach(id=>setTag(S.doc,id,t,!all))); }
+function bulkSkill(k){ const ids=selSeats(), all=ids.every(id=>(S.D.info[id].skills||[]).includes(k));
+  commit(()=>ids.forEach(id=>setSkill(S.skills,id,k,!all))); }
+// Those already in the team keep their allocation; the rest join with whatever share of their time is still free.
+function bulkXT(t){ const ids=selSeats(), all=ids.every(id=>S.D.info[id].xf.some(r=>r.team===t));
+  commit(()=>ids.forEach(id=>{ if(all) setMember(S.doc.xf,id,t,false); else if(!S.D.info[id].xf.some(r=>r.team===t)) setMember(S.doc.xf,id,t,true,{pct:freePct(id)}); })); }
+
+/* ---------- filters: one set of picks drives the chart highlight and the People list ---------- */
+// Picked values within a group are alternatives; groups combine. A group with nothing picked does not filter.
+const F={q:'',vacant:false,all:false,sel:{family:new Set(),loc:new Set(),role:new Set(),stream:new Set(),team:new Set(),xteam:new Set(),status:new Set(),tag:new Set(),skill:new Set()}};
+const isChanged=p=>{ const o=S.ref[p.id]; return !o||o.sup!==S.doc.nodes[p.id].sup; };
+const DIMS=[['family','Role group',p=>[FAM[p.family].label]],['loc','Location',p=>[p.loc||'(not set)']],['role','Role',p=>[p.roleName]],['stream','Stream',p=>[p.stream]],['team','Team',p=>[p.team]],
+  ['xteam','Cross-functional team',p=>p.xf.length?p.xf.map(r=>r.team):S.doc.xf.teams.length?[NO_XT]:[]],
+  ['status','Status',p=>[p.vacant&&'Vacant',p.starting&&'Starting',p.leaving&&'Leaving',p.moving&&'Relocating',isChanged(p)&&'Changed'].filter(Boolean)],
+  ['tag','Tag',p=>p.tags],
+  ['skill','Skill',p=>p.skills||[]]];
+const hlActive=()=>!!F.q||DIMS.some(([k])=>F.sel[k].size);
+const matchQ=p=>!F.q||(p.person+' '+p.title).toLowerCase().includes(F.q);
+// Different groups always combine with AND. Within a group, picks are alternatives (OR), except that for tags and skills,
+// where one person can hold several, F.all switches to "every one of these".
+const matchDims=(p,skip)=>DIMS.every(([k,,get])=>{ if(k===skip||!F.sel[k].size) return true; const vs=get(p);
+  return (k==='skill'||k==='tag')&&F.all?[...F.sel[k]].every(v=>vs.includes(v)):vs.some(v=>F.sel[k].has(v)); });
+const hlMatch=p=>matchQ(p)&&matchDims(p);
+// The People list leaves out open seats unless asked for, or unless Vacant itself is picked.
+const peopleBase=()=>S.D.people.filter(p=>!p.vacant||F.vacant||F.sel.status.has('Vacant'));
+// A group's values in a stable order (biggest first), each with how many of base it would match given the search and the other groups.
+function facet(base,[key,,get]){
+  const total={}, n={};
+  S.D.people.forEach(p=>get(p).forEach(v=>{ total[v]=(total[v]||0)+1; n[v]=0; }));
+  base.forEach(p=>{ if(matchQ(p)&&matchDims(p,key)) get(p).forEach(v=>{ n[v]++; }); });
+  return {vals:Object.keys(total).sort((a,b)=>total[b]-total[a]||a.localeCompare(b)),n};
+}
+function renderHL(){
+  const all=S.D.people, base=peopleBase();
+  DIMS.forEach(([k,,get])=>{ const have=new Set(all.flatMap(get)); [...F.sel[k]].forEach(v=>{ if(!have.has(v)) F.sel[k].delete(v); }); });
+  const opt=(cls,k,v,n,inner)=>`<button class="${cls}${F.sel[k].has(v)?' on':''}${n?'':' zero'}" data-dim="${k}" data-val="${esc(v)}">${inner}</button>`;
+  const mode=`<button class="mode" data-mode="1" title="When several tags or several skills are picked: match people with any of them, or only people with all of them">Match ${F.all?'all':'any'}</button>`;
+  $('#hlchips').innerHTML=DIMS.map(d=>{ const {vals,n}=facet(all,d); if(!vals.length) return '';
+    const chips=vs=>'<div class="hgroup">'+vs.map(v=>opt('chip',d[0],v,n[v],`${esc(v)} <b>${n[v]}</b>`)).join('')+'</div>';
+    if(d[0]!=='skill') return `<div class="hlabel">${d[1]}${d[0]==='tag'?mode:''}</div>`+chips(vals);
+    return skillGroups().map((g,i)=>{ const vs=vals.filter(v=>S.skills.groups[v]===g); return vs.length?`<div class="hlabel">Skill · ${esc(g)}${i?'':mode}</div>`+chips(vs):''; }).join('');
+  }).join('');
+  DIMS.forEach(d=>{ const {vals,n}=facet(base,d), k=d[0], size=F.sel[k].size, b=$(`[data-pop="pf-${k}"]`);
+    $('#pf-'+k).innerHTML=vals.map(v=>opt('mi opt',k,v,n[v],`<span class="ck">✓</span><span class="ol">${esc(v)}</span><b>${n[v]}</b>`)).join('')||'<div class="mlabel">Nothing to pick</div>';
+    if(k==='skill'||k==='tag') $('#pf-'+k).insertAdjacentHTML('afterbegin',`<div class="mlabel">${mode}</div>`);
+    b.textContent=d[1]+(size?' · '+size:'')+' ▾'; b.classList.toggle('on',!!size); });
+  const on=hlActive();
+  const picks=(F.q?`<button class="chip on" data-q="1" title="Remove">“${esc(F.q)}” ×</button>`:'')+
+    DIMS.map(([k])=>[...F.sel[k]].map(v=>`<button class="chip on" data-dim="${k}" data-val="${esc(v)}" title="Remove">${esc(v)} ×</button>`).join('')).join('');
+  document.querySelectorAll('.picks').forEach(e=>{ e.innerHTML=picks; });
+  $('#hlcount').textContent=on?`${all.filter(hlMatch).length} of ${all.length} seats`:'';
+  $('#hlstrip').classList.toggle('hidden',!on||S.tab!=='chart'); $('#pstrip').classList.toggle('hidden',!on);
+  $('#hlbtn').classList.toggle('on',DIMS.some(([k])=>F.sel[k].size));
+  $('#hlq').value=$('#pq').value=F.rawq||'';
+  renderRoleKey();
+}
+// The key in the corner of the chart: each role group's colour and headcount. Clicking one spotlights it: everyone else
+// fades right back and the group is ringed in its own colour. It is the Role group highlight, so it combines with the rest.
+function renderRoleKey(){
+  const c={}; S.D.people.forEach(p=>{ if(!p.vacant) c[p.family]=(c[p.family]||0)+1; });
+  $('#rolekey').innerHTML=FAMS.filter(f=>c[f.k]).map(f=>`<button class="rk fam-${f.k}${F.sel.family.has(f.label)?' on':''}" data-dim="family" data-val="${f.label}" aria-pressed="${F.sel.family.has(f.label)}" title="Spotlight ${f.label.toLowerCase()}">`+
+    `<i></i>${f.label}<b>${c[f.k]}</b></button>`).join('')+'<button class="rkedit" data-famedit="1" title="Change which group a role is in">Edit…</button>';
+  document.body.classList.toggle('famspot',F.sel.family.size>0);
+}
+function filtersChanged(){ renderHL(); renderChart(); placeSel(); renderPanel(); if(S.tab==='people') renderPeople(); }
+document.addEventListener('click',e=>{
+  const ch=e.target.closest('[data-dim],[data-q]'); if(e.target.closest('[data-mode]')){ F.all=!F.all; return filtersChanged(); }
+  if(!ch||!ch.closest('#hlchips,.picks,.pfpop,#skpanel,.fbar,#rolekey')) return;
+  if(ch.dataset.q){ F.q=F.rawq=''; }
+  else{ const sel=F.sel[ch.dataset.dim], v=ch.dataset.val; sel.has(v)?sel.delete(v):sel.add(v); }
+  filtersChanged();
+});
+['#hlq','#pq'].forEach(id=>$(id).addEventListener('input',e=>{ F.rawq=e.target.value; F.q=F.rawq.trim().toLowerCase(); filtersChanged(); }));
+document.querySelectorAll('.fclear').forEach(b=>b.onclick=()=>{ F.q=F.rawq=''; DIMS.forEach(([k])=>F.sel[k].clear()); filtersChanged(); });
+$('#pvac').onchange=e=>{ F.vacant=e.target.checked; filtersChanged(); };
+
+/* ---------- chart ---------- */
+// In a scenario with "Show changes" on, the chart is marked against the baseline: a faded card where each seat or team
+// sat in the baseline but no longer does, "from …" on whatever moved in, "edited" on changed details, and team headers
+// with their headcount and skill changes. Nothing is marked in the baseline itself.
+const placeName=(doc,id)=>{ const N=doc.nodes, a=N[N[id].sup]; return !a?'top level':a.type==='team'?a.title||'(unnamed team)':'under '+(a.person||a.title); };
+const FLABEL={title:'Title',person:'Name',hiring:'Hiring',loc:'Location',notes:'Notes',start:'Start date',end:'End date',tags:'Tags'};
+function chartDiff(){
+  if(!inScenario()||!S.showDiff) return null;
+  const B=baseDoc(), BN=B.nodes, N=S.doc.nodes, after={}, by={};
+  // after[pid][prev] lists the baseline seats to show faded under pid, just after child prev ('' for first).
+  walk(B,o=>{ const n=N[o.id]; if(n&&n.sup===o.sup) return; const pid=o.sup; if(pid&&!N[pid]) return;
+    const k=sibs(B,pid), to=sibs(S.doc,pid); let prev='';
+    for(let i=k.indexOf(o.id)-1;i>=0;i--) if(to.includes(k[i])){ prev=k[i]; break; }
+    const a=after[pid]=after[pid]||{}; (a[prev]=a[prev]||[]).push(o.id); });
+  S.skills.rows.forEach(r=>{ (by[r.id]=by[r.id]||[]).push(r.skill); });
+  // People (not open seats) anywhere under a team, and how many of them hold each skill.
+  const agg=(doc,id)=>{ const r={ppl:0,sk:{}}; (function go(x){ x.kids.forEach(k=>{ const n=doc.nodes[k];
+    if(n.type!=='team'&&!isVacant(n)){ r.ppl++; (by[k]||[]).forEach(s=>{ r.sk[s]=(r.sk[s]||0)+1; }); } go(n); }); })(doc.nodes[id]); return r; };
+  return {B,after,agg};
+}
+// A seat's card. o: flag (tags marking changes), tog (the collapse button) and mv (moved in) for the reporting layout;
+// xt (which cross-functional team this copy of the card is listed under) and meta (tags it adds) for the logical one.
+function seatCard(n,axis,o){
+  const p=S.D.info[n.id], hl=hlActive();
+  return `<div class="card${p.vacant?' vac':''}${S.many.has(n.id)?' sel':''}${p.endTag?' leaver':p.startTag?' starter':''}${hl?(hlMatch(p)?' hit':' dim'):''}${o.mv?' mvin':''}" data-id="${esc(n.id)}" data-axis="${axis}"${o.xt!=null?` data-xt="${esc(o.xt)}"`:''} style="--role:${S.colors.color[p.roleName]||'var(--line)'};--role-ink:var(--fi-${p.family},var(--panel))">`+
+    `<div class="nm">${SHOW.badge&&FAM[p.family].mono?`<span class="mono" title="${FAM[p.family].label}">${FAM[p.family].mono}</span>`:''}<span${SHOW.title?'':` title="${esc(n.title)}"`}>${esc(n.person||'(no name)')}</span></div>${SHOW.title?`<div class="ti">${esc(n.title)}</div>`:''}`+   // a hidden title still shows on hover
+    `<div class="meta">${o.meta||''}${SHOW.loc&&n.loc?`<span class="tag loc">${esc(n.loc)}</span>`:''}${p.vacant&&!VOCAB.vacant.test(n.person)?'<span class="tag vac">Hiring</span>':''}${SHOW.dates&&p.startTag?`<span class="tag nz">${esc(p.startTag)}</span>`:''}${SHOW.dates&&p.endTag?`<span class="tag gap">${esc(p.endTag)}</span>`:''}${SHOW.tags?p.tags.map(t=>tagChip(t)).join(''):''}${SHOW.skills&&p.skills.length?`<span class="tag sk" title="${esc(p.skills.join(', '))}">${p.skills.length} skill${p.skills.length>1?'s':''}</span>`:''}${o.flag||''}</div>`+
+    (SHOW.notes&&n.notes?`<div class="nt">${esc(n.notes)}</div>`:'')+(o.tog||'')+'</div>';
+}
+const fmtFte=v=>String(Math.round(v*10)/10);
+// The logical layout: the cross-functional teams side by side, those sharing a group boxed together, each listing its
+// members with their role, allocation and where they sit in the reporting line. Someone in two teams is listed in both.
+// Everyone in none comes last, grouped by their reporting team, ready to be dragged in. In a scenario with "Show changes"
+// on, it is marked against the baseline's teams: who joined, who left (faded), allocation and FTE changes.
+function renderLogical(){
+  const d=S.doc, N=d.nodes, x=d.xf, info=S.D.info, hl=hlActive();
+  const B=inScenario()&&S.showDiff?baseDoc():null, mk=(id,t)=>id+'\u0001'+t, was={}, now={};
+  if(B) B.xf.rows.forEach(r=>{ was[mk(r.id,r.team)]=r; });
+  x.rows.forEach(r=>{ now[mk(r.id,r.team)]=r; });
+  const by={}; x.rows.forEach(r=>{ if(info[r.id]) (by[r.team]=by[r.team]||[]).push(r); });
+  const tog=key=>`<button class="tog" data-tog="${esc(key)}" title="${S.collapsed.has(key)?'Expand':'Collapse'}">${S.collapsed.has(key)?'+':'–'}</button>`;
+  const order=(a,b)=>{ const p=info[a.id], q=info[b.id]; return (!a.role-!b.role)||a.role.localeCompare(b.role)||p.roleName.localeCompare(q.roleName)||p.vacant-q.vacant||p.person.localeCompare(q.person); };
+  const fte=(rows,vac)=>rows.reduce((s,r)=>s+(vac(r)?0:r.pct),0)/100;
+  const member=r=>{ const p=info[r.id], o=B&&was[mk(r.id,r.team)], moved=o&&o.pct!==r.pct;
+    const meta=(r.role?`<span class="tag xr">${esc(r.role)}</span>`:'')+
+      `<span class="tag loc" title="In the reporting line: ${esc(p.stream)}${p.team!==NO_TEAM?' · '+esc(p.team):''}">${esc(homeOf(p))}</span>`+
+      (r.pct!==100||p.alloc>100||moved?`<span class="tag ${p.alloc>100?'gap':'move'}" title="${p.alloc>100?`Over-allocated: ${p.alloc}% across their teams`:`${p.alloc}% of their time is in cross-functional teams`}">${moved?o.pct+'% → ':''}${r.pct}%</span>`:'')+
+      (B&&!o?'<span class="tag nz" title="Not in this team in the baseline">joined</span>':'');
+    return seatCard(N[r.id],'v',{xt:r.team,meta}); };
+  const left=r=>{ const o=B.nodes[r.id];
+    return `<div class="card ghostc${N[r.id]?'':' gone'}" title="In this team in the baseline"><div class="nm">${esc(o.person||'(no name)')}</div><div class="ti">${esc(o.title)}</div>`+
+      `<div class="meta"><span class="tag gap">${N[r.id]?'Left the team':'Removed'}</span></div></div>`; };
+  const column=t=>{ const ms=(by[t.name]||[]).slice().sort(order), vac=r=>info[r.id].vacant, ppl=ms.filter(r=>!vac(r)), open=ms.length-ppl.length, key='xt:'+t.name;
+    // The same coverage marking as a reporting team: with a skill picked, how many hold it and how many of those are staying.
+    const cov=F.sel.skill.size>0&&ppl.length>0, pure=cov&&!F.q&&DIMS.every(([k])=>k==='skill'||!F.sel[k].size), hit=hl?ppl.filter(r=>hlMatch(info[r.id])):[], hits=hit.length, stay=hit.filter(r=>stays(info[r.id])).length;
+    const tag=cov?`<span class="tag ${hits?'vac':'gap'}" title="Members matching the highlight">${hits} of ${ppl.length}${stay<hits?` · ${stay} staying`:''}</span>`:hits?`<span class="tag vac" title="Highlighted in this team">${hits}</span>`:'';
+    // The role mix: a bar in the header, and under it each group's count.
+    const fc={}; ppl.forEach(r=>{ const k=info[r.id].family; fc[k]=(fc[k]||0)+1; });
+    const mix=FAMS.filter(f=>fc[f.k]).map(f=>`<span class="fam-${f.k}"><i></i>${f.label} ${fc[f.k]}</span>`).join('');
+    let diff='';
+    if(B){ const bt=xfTeam(B.xf,t.name), br=B.xf.rows.filter(r=>r.team===t.name), bv=r=>isVacant(B.nodes[r.id]), bf=fte(br,bv), nf=fte(ms,vac);
+      diff=!bt?'<span class="tag nz" title="Not in the baseline">new</span>':bf!==nf?`<span class="tag move" title="FTE in the baseline → in this scenario">${fmtFte(bf)} → ${fmtFte(nf)} FTE</span>`:''; }
+    const gone=B?B.xf.rows.filter(r=>r.team===t.name&&!now[mk(r.id,r.team)]):[];
+    const body=ms.map(member).join('')+gone.map(left).join('');
+    return `<div class="team xteam${pure&&hits<2?' cov'+hits:''}" data-xteam="${esc(t.name)}"><div class="thead">`+
+      `<span class="tn">${esc(t.name)}</span><button class="xe" data-xedit="${esc(t.name)}" title="Rename, regroup or delete this team" aria-label="Edit ${esc(t.name)}">✎</button>${tog(key)}`+
+      `${diff}${tag}<span class="tc">${ppl.length} ${ppl.length===1?'person':'people'} · ${fmtFte(fte(ms,vac))} FTE${open?' + '+open+' open':''}</span>${famBar(ppl.map(r=>info[r.id]))}</div>`+
+      (mix&&!S.collapsed.has(key)?`<div class="fkey">${mix}</div>`:'')+
+      (t.purpose&&!S.collapsed.has(key)?`<div class="xp">${esc(t.purpose)}</div>`:'')+
+      (S.collapsed.has(key)?'':`<div class="tbody">${body||'<div class="empty">Drop people here</div>'}</div>`)+'</div>'; };
+  // Teams without a group stand alone; a group's teams are boxed together where its first team is.
+  const out=[], seen=new Set();
+  x.teams.forEach(t=>{ if(!t.group) return out.push(column(t)); if(seen.has(t.group)) return; seen.add(t.group);
+    const ts=x.teams.filter(u=>u.group===t.group), ids=new Set(ts.flatMap(u=>(by[u.name]||[]).map(r=>r.id))), key='xg:'+t.group;
+    const f=fte(ts.flatMap(u=>by[u.name]||[]),r=>info[r.id].vacant);
+    out.push(`<div class="team group"><div class="thead"><span class="tn">${esc(t.group)}</span>${tog(key)}<span class="tc">${ts.length} team${ts.length>1?'s':''} · ${[...ids].filter(id=>!info[id].vacant).length} people · ${fmtFte(f)} FTE</span>${famBar([...ids].map(id=>info[id]).filter(p=>!p.vacant))}</div>`+
+      (S.collapsed.has(key)?'':`<div class="gbody">${ts.map(column).join('')}<button class="tb xadd" data-xadd="${esc(t.group)}" title="Add a team to ${esc(t.group)}">+ Team</button></div>`)+'</div>'); });
+  out.push(x.teams.length?'<button class="tb xadd" data-xadd="" title="Add a cross-functional team">+ Cross-functional team</button>'
+    :'<div class="xintro"><b>No cross-functional teams yet.</b><br>Add one, then drag people into it from the list of everyone not in a team. Each person can be in several teams, with a share of their time in each. The teams are saved in the workbook alongside the chart, separately for each scenario.<br><button class="tb" data-xadd="">+ Cross-functional team</button></div>');
+  // Everyone in no team, grouped by where they sit in the reporting line, in chart order.
+  const none=S.D.people.filter(p=>!p.xf.length), homes=[], hm={};
+  none.forEach(p=>{ const h=p.stream+(p.team!==NO_TEAM?' · '+p.team:''); if(!hm[h]){ hm[h]=[]; homes.push(h); } hm[h].push(p); });
+  if(none.length){ const key='xt:'; out.push(`<div class="team group xnone" data-xteam=""><div class="thead"><span class="tn">${NO_XT}</span>${tog(key)}<span class="tc">${none.filter(p=>!p.vacant).length} people${none.some(p=>p.vacant)?' + '+none.filter(p=>p.vacant).length+' open':''}</span></div>`+
+    (S.collapsed.has(key)?'':`<div class="gbody">${homes.map(h=>`<div class="team"><div class="thead"><span class="tn">${esc(h)}</span><span class="tc">${hm[h].length}</span></div><div class="tbody">${hm[h].map(p=>seatCard(N[p.id],'v',{xt:''})).join('')}</div></div>`).join('')}</div>`)+'</div>'); }
+  cv.innerHTML=out.join('');
+}
+function renderChart(){
+  if(S.view==='logical') return renderLogical();
+  const d=S.doc, N=d.nodes, info=S.D.info, hl=hlActive(), X=chartDiff(), G=X?X.after:{};
+  const seatsUnder=n=>n.kids.reduce((s,k)=>s+(N[k].type==='team'?0:1)+seatsUnder(N[k]),0);
+  const tog=n=>n.kids.length?`<button class="tog" data-tog="${esc(n.id)}" title="${S.collapsed.has(n.id)?'Expand':'Collapse'}">${S.collapsed.has(n.id)?'+'+seatsUnder(n):'–'}</button>`:'';
+  const movedIn=n=>{ const o=S.ref[n.id]; return !!o&&o.sup!==n.sup; };
+  const flag=n=>{ const o=S.ref[n.id]; if(!o) return '<span class="tag nz">new</span>';
+    if(X){ const b=X.B.nodes[n.id], ed=FIELDS.filter(f=>(b[f]||'')!==(n[f]||'')).map(f=>`${FLABEL[f]}: ${b[f]||'(blank)'} → ${n[f]||'(blank)'}`);
+      return (o.sup!==n.sup?`<span class="tag move" title="Where it was in the baseline">from ${esc(placeName(X.B,n.id))}</span>`:'')+(ed.length?`<span class="tag loc" title="${esc(ed.join('\n'))}">edited</span>`:''); }
+    return o.sup!==n.sup?`<span class="tag move" title="Was under ${esc(o.sup&&N[o.sup]?(N[o.sup].type==='team'?N[o.sup].title:N[o.sup].person):'nobody')}">moved</span>`:''; };
+  // A child list with the baseline's faded seats placed among it: [{k: id} | {g: id}].
+  const at=(pid,prev)=>((G[pid]||{})[prev]||[]).map(g=>({g}));
+  const kidsOf=(pid,kids)=>[...at(pid,''),...kids.flatMap(k=>[{k},...at(pid,k)])];
+  const ghost=id=>{ const o=X.B.nodes[id], n=N[id], tm=o.type==='team';
+    return `<div class="card ghostc${n?'':' gone'}" title="${tm?'This team':'This seat'} was here in the baseline">`+
+      `<div class="nm">${esc(tm?o.title||'(unnamed team)':o.person||'(no name)')}</div><div class="ti">${esc(tm?'Team':o.title)}</div>`+
+      `<div class="meta">${n?`<span class="tag move">→ ${esc(placeName(d,id))}</span>`:'<span class="tag gap">Removed</span>'}</div></div>`; };
+  const card=(n,axis)=>seatCard(n,axis,{flag:flag(n),tog:tog(n),mv:X&&movedIn(n)});
+  // Against the baseline: the headcount if it changed, and skills the team loses, is down to one holder of, or gains.
+  const teamDiff=n=>{ if(!X||!X.B.nodes[n.id]) return '';
+    const a=X.agg(X.B,n.id), b=X.agg(d,n.id), t=[];
+    [...new Set([...Object.keys(a.sk),...Object.keys(b.sk)])].sort((x,y)=>x.localeCompare(y)).forEach(k=>{ const x=a.sk[k]||0, y=b.sk[k]||0;
+      if(x&&!y) t.push([0,'gap','Loses '+k]); else if(x>=2&&y===1) t.push([1,'vac',k+': 1 left']); else if(!x&&y) t.push([2,'nz','Gains '+k]); });
+    t.sort((p,q)=>p[0]-q[0]);
+    return (a.ppl!==b.ppl?`<span class="tag move" title="People in the baseline → in this scenario">${a.ppl} → ${b.ppl} people</span>`:'')+
+      t.slice(0,3).map(([,c,l])=>`<span class="tag ${c}">${esc(l)}</span>`).join('')+
+      (t.length>3?`<span class="tag loc" title="${esc(t.slice(3).map(x=>x[2]).join('\n'))}">+${t.length-3} more</span>`:''); };
+  const team=(n,axis)=>{ const seats=[]; (function go(x){x.kids.forEach(k=>{ if(N[k].type!=='team') seats.push(info[k]); go(N[k]); });})(n);
+    // With a skill picked, each team shows its coverage: how many hold it, how many of those are staying, and a tint for none or one.
+    // The count is of people matching the whole highlight, the same people that are ringed. The none / one border is only
+    // drawn when skills are the only thing picked, so narrowing by stream, tag or location does not paint other teams as gaps.
+    const vac=seats.filter(p=>p.vacant).length, cov=F.sel.skill.size>0&&seats.length>vac, pure=cov&&!F.q&&DIMS.every(([k])=>k==='skill'||!F.sel[k].size), hit=hl?seats.filter(hlMatch):[], hits=hit.length, stay=hit.filter(stays).length;
+    const tag=cov?`<span class="tag ${hits?'vac':'gap'}" title="People in this team matching the highlight">${hits} of ${seats.length-vac}${stay<hits?` · ${stay} staying`:''}</span>`:hits?`<span class="tag vac" title="Highlighted in this team">${hits}</span>`:'';
+    const items=S.collapsed.has(n.id)?[]:kidsOf(n.id,n.kids), grp=isGroup(n);
+    return `<div class="team${grp?' group':''}${S.many.has(n.id)?' sel':''}${pure&&hits<2?' cov'+hits:''}" data-team="${esc(n.id)}"><div class="thead" data-id="${esc(n.id)}" data-axis="${axis}">`+
+      `<span class="tn">${esc(n.title||'(unnamed team)')}</span>${flag(n)}${tag}${teamDiff(n)}<span class="tc">${seats.length-vac}${vac?' + '+vac+' vacant':''}</span>${tog(n)}${famBar(seats.filter(p=>!p.vacant))}</div>`+
+      (S.collapsed.has(n.id)?'':grp?`<div class="gbody">${columns(items).join('')}</div>`
+        :`<div class="tbody">${items.map(x=>x.k?list(N[x.k]):ghost(x.g)).join('')||'<div class="empty">Drop people here</div>'}</div>`)+'</div>'; };
+  // A team holding a lead (someone with reports) is a group, such as a stream: its contents are laid out like the chart
+  // itself, leads side by side with their teams beneath, rather than as one long list.
+  const isGroup=n=>n.kids.some(k=>N[k].type!=='team'&&N[k].kids.length>0);
+  const branch=x=>x.k&&(N[x.k].type==='team'||N[x.k].kids.length>0||!!G[x.k]), leaf=(x,ax)=>x.k?card(N[x.k],ax):ghost(x.g);
+  // Leads and teams each get a column; runs of people without reports between them stack in one column.
+  const columns=items=>{ const cols=[];let run=[];
+    const flush=()=>{ if(run.length) cols.push(run.length===1?leaf(run[0],'h'):`<div class="stack">${run.map(x=>leaf(x,'v')).join('')}</div>`); run=[]; };
+    items.forEach(x=>{ if(branch(x)){ flush(); cols.push(tree(N[x.k],'h')); } else run.push(x); }); flush();
+    return cols; };
+  // Inside a team everything is an indented list.
+  const list=n=>{ if(n.type==='team') return team(n,'v');
+    const items=S.collapsed.has(n.id)?[]:kidsOf(n.id,n.kids);
+    return card(n,'v')+(items.length?`<div class="sub">${items.map(x=>x.k?list(N[x.k]):ghost(x.g)).join('')}</div>`:''); };
+  // Outside teams: leads and teams sit side by side, runs of people without reports stack in one column.
+  const tree=(n,axis)=>{
+    if(n.type==='team') return `<div class="node">${team(n,axis)}</div>`;
+    let h=`<div class="node">${card(n,axis)}`;
+    const items=S.collapsed.has(n.id)?[]:kidsOf(n.id,n.kids);
+    if(items.length) h+=items.some(branch)?`<div class="kids h">${columns(items).map(c=>`<div class="col">${c}</div>`).join('')}</div>`
+      :`<div class="kids v">${items.map(x=>leaf(x,'v')).join('')}</div>`;
+    return h+'</div>';
+  };
+  cv.innerHTML=kidsOf('',d.roots).map(x=>x.k?tree(N[x.k],'h'):`<div class="node">${ghost(x.g)}</div>`).join('')||'<button class="tb first" id="firstseat">+ Add the first person</button>';
+}
+
+/* ---------- pan & zoom ---------- */
+function applyView(){
+  const w=cv.offsetWidth*V.k,h=cv.offsetHeight*V.k,vw=vp.clientWidth,vh=vp.clientHeight,m=120;
+  V.x=Math.min(vw-m,Math.max(m-w,V.x)); V.y=Math.min(vh-m,Math.max(m-h,V.y));
+  cv.style.transform=`translate(${V.x}px,${V.y}px) scale(${V.k})`;
+  $('#zoomv').textContent=Math.round(V.k*100)+'%';
+  placeSel();
+}
+function zoomAt(cx,cy,f){
+  const r=vp.getBoundingClientRect(), k=Math.min(2.5,Math.max(.12,V.k*f)), px=cx-r.left, py=cy-r.top;
+  V.x=px-(px-V.x)*k/V.k; V.y=py-(py-V.y)*k/V.k; V.k=k; applyView();
+}
+const zoomMid=f=>{ const r=vp.getBoundingClientRect(); zoomAt(r.left+r.width/2,r.top+r.height/2,f); };
+// Fit shows the whole chart; on first load it stays legible instead and starts at the top of the tree.
+function fit(initial){
+  const w=cv.offsetWidth,h=cv.offsetHeight,vw=vp.clientWidth,vh=vp.clientHeight; if(!w||!vw) return;
+  let k=Math.min((vw-32)/w,(vh-32)/h,1); if(initial) k=Math.max(k,.5);
+  V.k=k; V.x=(vw-w*k)/2; V.y=h*k>vh-32?16:(vh-h*k)/2; applyView();
+}
+vp.addEventListener('wheel',e=>{
+  if(e.target.closest('#skpanel')) return;
+  e.preventDefault();
+  if(e.ctrlKey||e.metaKey) return zoomAt(e.clientX,e.clientY,Math.exp(-Math.max(-50,Math.min(50,e.deltaY))*.006));
+  const u=e.deltaMode?32:1;
+  if(e.shiftKey&&!e.deltaX) V.x-=e.deltaY*u; else { V.x-=e.deltaX*u; V.y-=e.deltaY*u; }
+  applyView();
+},{passive:false});
+
+/* ---------- pointer: select, pan, drag to move ---------- */
+let pend=null, pan=null, drag=null; const touches=new Map();
+vp.addEventListener('pointerdown',e=>{
+  if(e.target.closest('button,select,#selbar,#zoombox,#skpanel')) return;
+  const el=e.target.closest('[data-id]');
+  if(e.pointerType==='touch'){ touches.set(e.pointerId,{x:e.clientX,y:e.clientY}); pend=touches.size===1&&el?{id:el.dataset.id,sx:e.clientX,sy:e.clientY,touch:true}:null; return; }
+  const add=e.ctrlKey||e.metaKey||e.shiftKey;
+  if(el&&e.button===0) pend={id:el.dataset.id,el,sx:e.clientX,sy:e.clientY,add};
+  else if(e.button<=2){ pan={sx:e.clientX,sy:e.clientY,x:V.x,y:V.y,moved:false,btn:e.button,id:el&&el.dataset.id,add}; if(e.button) vp.classList.add('panning'); e.preventDefault(); }
+});
+vp.addEventListener('contextmenu',e=>e.preventDefault());
+window.addEventListener('pointermove',e=>{
+  if(touches.has(e.pointerId)){
+    const p=touches.get(e.pointerId), o=[...touches].find(([id])=>id!==e.pointerId);
+    if(o){ const q=o[1], d0=Math.hypot(p.x-q.x,p.y-q.y), d1=Math.hypot(e.clientX-q.x,e.clientY-q.y); if(d0>0) zoomAt((e.clientX+q.x)/2,(e.clientY+q.y)/2,d1/d0); }
+    else { V.x+=e.clientX-p.x; V.y+=e.clientY-p.y; applyView(); }
+    p.x=e.clientX; p.y=e.clientY; return;
+  }
+  if(pan){ if(!pan.moved&&Math.hypot(e.clientX-pan.sx,e.clientY-pan.sy)<4) return; pan.moved=true; if(pan.btn){ V.x=pan.x+e.clientX-pan.sx; V.y=pan.y+e.clientY-pan.sy; applyView(); } else moveMarquee(e); }
+  else if(drag){ setCopy(e.ctrlKey); updateDrag(e.clientX,e.clientY); }
+  else if(pend&&!pend.touch&&Math.hypot(e.clientX-pend.sx,e.clientY-pend.sy)>5) startDrag(e);
+});
+const endPointer=e=>{
+  if(touches.delete(e.pointerId)){ if(pend&&pend.touch&&Math.hypot(e.clientX-pend.sx,e.clientY-pend.sy)<8) select(pend.id); pend=null; return; }
+  if(drag){ if(e.type==='pointerup'){ setCopy(e.ctrlKey); drop(); } else cancelDrag(); }
+  else if(pend) select(pend.id,pend.add);
+  else if(pan&&pan.moved&&pan.btn===0) endMarquee();
+  else if(pan&&!pan.moved&&pan.btn===0){ if(!pan.add) select(null); }
+  else if(pan&&!pan.moved&&pan.btn===2&&pan.id){ if(!S.many.has(pan.id)) select(pan.id); }
+  pend=pan=null; vp.classList.remove('panning');
+};
+window.addEventListener('pointerup',endPointer); window.addEventListener('pointercancel',endPointer);
+// Left-dragging over empty space draws a box; the cards it touches are selected (added to the selection with Ctrl or Shift).
+const marq=$('#marq');
+function moveMarquee(e){
+  const x=Math.min(pan.sx,e.clientX), y=Math.min(pan.sy,e.clientY), w=Math.abs(e.clientX-pan.sx), h=Math.abs(e.clientY-pan.sy);
+  Object.assign(marq.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'}); marq.classList.remove('hidden');
+  pan.hits=[...cv.querySelectorAll('.card[data-id]')].filter(c=>{ const r=c.getBoundingClientRect(); return r.right>x&&r.left<x+w&&r.bottom>y&&r.top<y+h; });
+  cv.querySelectorAll('.inmarq').forEach(c=>c.classList.remove('inmarq')); pan.hits.forEach(c=>c.classList.add('inmarq'));
+}
+function endMarquee(){
+  marq.classList.add('hidden'); cv.querySelectorAll('.inmarq').forEach(c=>c.classList.remove('inmarq'));
+  const ids=(pan.hits||[]).map(c=>c.dataset.id);
+  setSel(pan.add?[...S.many,...ids.filter(id=>!S.many.has(id))]:ids); markSel(); updateBar();
+}
+
+// Dragging a card that is part of a multi-selection takes the whole selection along, in chart order. Anything already
+// under another selected item travels with that item rather than separately.
+function startDrag(e){
+  if(S.view==='logical') return startXDrag(e);
+  let ids=[pend.id];
+  if(isMulti()&&S.many.has(pend.id)){ const all=[]; walk(S.doc,n=>{ if(S.many.has(n.id)) all.push(n.id); }); ids=all.filter(id=>!all.some(o=>o!==id&&isUnder(S.doc,id,o))); }
+  const box=el=>el.classList.contains('thead')?el.parentElement:el;
+  const srcs=ids.map(id=>cv.querySelector(`[data-id="${CSS.escape(id)}"]`)).filter(Boolean).map(box);
+  const ghost=pend.el.cloneNode(true); ghost.classList.add('ghost'); ghost.classList.remove('sel');
+  if(ghost.classList.contains('thead')) ghost.classList.add('team');
+  ghost.style.width=Math.min(220,pend.el.offsetWidth)+'px';
+  if(ids.length>1) ghost.insertAdjacentHTML('beforeend',`<span class="cnt">${ids.length}</span>`);
+  document.body.append(ghost); srcs.forEach(s=>s.classList.add('dragging')); selbar.classList.add('hidden');
+  drag={id:pend.id,ids,ghost,srcs,t:null,copy:false,cx:e.clientX,cy:e.clientY,raf:requestAnimationFrame(autoPan)}; pend=null;
+  setCopy(e.ctrlKey); updateDrag(e.clientX,e.clientY);
+}
+// In the logical layout a drag changes cross-functional membership, never the reporting line. from is the team the card
+// was dragged out of ('' for the not-in-a-team list); a multi-selection goes along when the dragged card is part of it.
+function startXDrag(e){
+  const from=pend.el.dataset.xt||'', ids=isMulti()&&S.many.has(pend.id)?selSeats():[pend.id];
+  const srcs=ids.map(id=>cv.querySelector(`[data-xt="${CSS.escape(from)}"][data-id="${CSS.escape(id)}"]`)).filter(Boolean);
+  const ghost=pend.el.cloneNode(true); ghost.classList.add('ghost'); ghost.classList.remove('sel'); ghost.style.width=Math.min(220,pend.el.offsetWidth)+'px';
+  if(ids.length>1) ghost.insertAdjacentHTML('beforeend',`<span class="cnt">${ids.length}</span>`);
+  document.body.append(ghost); srcs.forEach(s=>s.classList.add('dragging')); selbar.classList.add('hidden');
+  drag={id:pend.id,ids,from,ghost,srcs,t:null,copy:false,cx:e.clientX,cy:e.clientY,raf:requestAnimationFrame(autoPan)}; pend=null;
+  setCopy(e.ctrlKey); updateDrag(e.clientX,e.clientY);
+}
+function dropX({ids,from,t,copy:also}){
+  commit(()=>{ const x=S.doc.xf;
+    ids.forEach(id=>{ const src=x.rows.find(r=>r.id===id&&r.team===from), there=x.rows.find(r=>r.id===id&&r.team===t.xteam);
+      if(!t.xteam){ if(src) setMember(x,id,from,false); return; }          // onto the not-in-a-team list: out of the team it came from
+      if(src&&!also){ setMember(x,id,from,false);                          // a move takes its allocation and role along
+        if(there) there.pct=Math.min(100,there.pct+src.pct); else setMember(x,id,t.xteam,true,{role:src.role,pct:src.pct}); }
+      else if(!there) setMember(x,id,t.xteam,true,{pct:freePct(id)}); });
+    setSel(ids);
+    S.collapsed.delete('xt:'+t.xteam);
+  });
+}
+// Holding Ctrl turns the move into a copy; the original stays where it is.
+function setCopy(on){
+  if(!drag||drag.copy===on) return;
+  drag.copy=on; drag.ghost.classList.toggle('copy',on); drag.srcs.forEach(s=>s.classList.toggle('dragging',!on));
+}
+// The middle of a card or team header means "report to this"; the leading and trailing edges mean "place before / after it".
+function updateDrag(cx,cy){
+  drag.cx=cx; drag.cy=cy; drag.ghost.style.transform=`translate(${cx+12}px,${cy+10}px)`;
+  const el=document.elementFromPoint(cx,cy);
+  if(drag.from!=null){   // logical layout: anywhere on a team column means into that team
+    const tb=el&&vp.contains(el)&&el.closest('[data-xteam]'), t=tb&&tb.dataset.xteam!==drag.from?{xteam:tb.dataset.xteam,el:tb}:null;
+    cv.querySelectorAll('.into').forEach(x=>x.classList.remove('into')); ins.classList.add('hidden');
+    drag.t=t; if(t) t.el.classList.add('into'); return;
+  }
+  const hit=el&&vp.contains(el)&&el.closest('[data-id]'); let t=null;
+  // The edge zones are capped in pixels, so a wide group header is mostly "into" rather than "before" / "after".
+  if(hit){ const r=hit.getBoundingClientRect(), ax=hit.dataset.axis, size=ax==='v'?r.height:r.width, at=ax==='v'?cy-r.top:cx-r.left, edge=Math.min(size*.28,36);
+    t={id:hit.dataset.id,pos:at<edge?'before':at>size-edge?'after':'into',el:hit,ax}; }
+  else{ const tb=el&&vp.contains(el)&&el.closest('[data-team]'); if(tb) t={id:tb.dataset.team,pos:'into',el:tb}; }
+  if(t&&!drag.copy&&drag.ids.some(id=>isUnder(S.doc,t.id,id))) t=null;
+  cv.querySelectorAll('.into').forEach(x=>x.classList.remove('into')); ins.classList.add('hidden');
+  drag.t=t; if(!t) return;
+  if(t.pos==='into') (t.el.classList.contains('thead')?t.el.parentElement:t.el).classList.add('into');
+  else{ const r=(t.el.classList.contains('thead')&&t.ax==='h'?t.el.parentElement:t.el).getBoundingClientRect(), g=4*V.k, s=ins.style;
+    if(t.ax==='v'){ s.left=r.left+'px'; s.width=r.width+'px'; s.height='3px'; s.top=(t.pos==='before'?r.top-g:r.bottom+g-3)+'px'; }
+    else{ s.top=r.top+'px'; s.height=r.height+'px'; s.width='3px'; s.left=(t.pos==='before'?r.left-g*1.75:r.right+g*1.75-3)+'px'; }
+    ins.classList.remove('hidden'); }
+}
+function autoPan(){
+  if(!drag) return;
+  const r=vp.getBoundingClientRect(), m=48, sp=14;
+  const dx=drag.cx<r.left+m?sp:drag.cx>r.right-m?-sp:0, dy=drag.cy<r.top+m?sp:drag.cy>r.bottom-m?-sp:0;
+  if(dx||dy){ V.x+=dx; V.y+=dy; applyView(); updateDrag(drag.cx,drag.cy); }
+  drag.raf=requestAnimationFrame(autoPan);
+}
+function cancelDrag(){
+  if(!drag) return;
+  cancelAnimationFrame(drag.raf); drag.ghost.remove(); drag.srcs.forEach(s=>s.classList.remove('dragging'));
+  cv.querySelectorAll('.into').forEach(x=>x.classList.remove('into')); ins.classList.add('hidden'); drag=null; placeSel();
+}
+function drop(){
+  const dr=drag, {ids,t,copy:dup}=dr; cancelDrag(); if(!t) return;
+  if(dr.from!=null) return dropX(dr);
+  commit(()=>{
+    // Each item goes in after the one placed before it, so a multi-selection keeps its order.
+    const T=S.doc.nodes[t.id], into=t.pos==='into', pid=into?t.id:T.sup, out=[], taken=takenIds(); let anchor=t.pos==='after'?t.id:null;
+    const idx=()=>into?null:anchor?sibs(S.doc,pid).indexOf(anchor)+1:sibs(S.doc,pid).indexOf(t.id);
+    ids.forEach(id=>{ let nid=id;
+      if(dup){ const map={}; nid=copy(S.doc,id,pid,idx(),map,taken);   // a copy keeps the original's skills and cross-functional teams
+        S.skills.rows.filter(r=>map[r.id]).forEach(r=>S.skills.rows.push({...r,id:map[r.id]}));
+        S.doc.xf.rows.filter(r=>map[r.id]).forEach(r=>S.doc.xf.rows.push({...r,id:map[r.id]})); }
+      else move(S.doc,id,pid,idx());
+      out.push(nid); if(!into) anchor=nid; });
+    setSel(out);
+    if(into) S.collapsed.delete(t.id);
+  });
+}
+cv.addEventListener('click',e=>{
+  if(e.target.closest('#firstseat')) return addNode('seat');
+  const b=e.target.closest('[data-tog]'); if(!b) return;
+  const id=b.dataset.tog; S.collapsed.has(id)?S.collapsed.delete(id):S.collapsed.add(id); renderChart(); placeSel(); });
+cv.addEventListener('dblclick',e=>{ const el=e.target.closest('[data-id]'); if(el&&!e.target.closest('button')){ select(el.dataset.id); openEdit(); } });
+
+/* ---------- editing ---------- */
+const dlg=$('#dlg'), form=$('#dform');
+let bulk=null;   // while the dialog edits several seats: their IDs and the values it opened with
+const BULK=['title','loc','notes','start','end'];
+function openEdit(){
+  if(isMulti()) return openBulk();
+  const n=S.doc.nodes[S.sel]; if(!n) return;
+  bulk=null; form.querySelectorAll('.mixed').forEach(x=>x.remove()); form.querySelectorAll('.one-only').forEach(l=>l.classList.remove('hidden'));
+  BULK.forEach(f=>{ form[f].placeholder=''; }); form.hiring.indeterminate=false;
+  const team=n.type==='team';
+  $('#dh').textContent=team?'Edit team':'Edit seat'; $('#dtl').textContent=team?'Team name':'Title';
+  form.querySelectorAll('.seat-only').forEach(l=>l.classList.toggle('hidden',team));
+  form.title.value=n.title; form.person.value=n.person; form.loc.value=n.loc; form.notes.value=n.notes; form.start.value=toISO(n.start); form.end.value=toISO(n.end); form.tags.value=n.tags||''; form.hiring.checked=/yes/i.test(n.hiring);
+  $('#locs').innerHTML=[...new Set(Object.values(S.doc.nodes).map(x=>x.loc).filter(Boolean))].sort().map(l=>`<option value="${esc(l)}">`).join('');
+  dlg.returnValue=''; dlg.showModal(); (team?form.title:form.person).select();
+}
+// The same dialog for several seats. A field they all share starts filled in; one where they differ is marked "mixed",
+// starts empty and is left alone unless something is typed in it. Name and tags are not offered (tags are in the side panel).
+function openBulk(){
+  const ids=selSeats(); if(!ids.length) return;
+  const ns=ids.map(id=>S.doc.nodes[id]), same=f=>ns.every(n=>(n[f]||'')===(ns[0][f]||'')), init={};
+  $('#dh').textContent=`Edit ${ids.length} seats`; $('#dtl').textContent='Title';
+  form.querySelectorAll('.seat-only').forEach(l=>l.classList.remove('hidden')); form.querySelectorAll('.one-only').forEach(l=>l.classList.add('hidden'));
+  form.querySelectorAll('.mixed').forEach(x=>x.remove());
+  BULK.forEach(f=>{ const one=same(f), v=one?(f==='start'||f==='end'?toISO(ns[0][f]):ns[0][f]||''):'';
+    form[f].value=init[f]=v; form[f].placeholder=one?'':'Mixed: leave empty to keep each one as it is';
+    if(!one) form[f].closest('label').insertBefore(Object.assign(document.createElement('span'),{className:'mixed',textContent:'· mixed '}),form[f]); });
+  const hs=ns.map(n=>/yes/i.test(n.hiring)), allH=hs.every(Boolean), mixH=!allH&&hs.some(Boolean);
+  form.hiring.checked=allH; form.hiring.indeterminate=mixH; init.hiring=mixH?null:allH;
+  $('#locs').innerHTML=[...new Set(Object.values(S.doc.nodes).map(x=>x.loc).filter(Boolean))].sort().map(l=>`<option value="${esc(l)}">`).join('');
+  bulk={ids,init}; dlg.returnValue=''; dlg.showModal(); form.title.focus();
+}
+dlg.addEventListener('close',()=>{
+  if(bulk){ const b=bulk; bulk=null; if(dlg.returnValue!=='ok') return;
+    const set={}; BULK.forEach(f=>{ const v=form[f].value.trim(); if(v!==b.init[f]) set[f]=v; });
+    const hire=form.hiring.indeterminate?null:form.hiring.checked; if(hire!==null&&hire!==b.init.hiring) set.hiring=hire;
+    if(!Object.keys(set).length) return;
+    return commit(()=>b.ids.forEach(id=>{ const n=S.doc.nodes[id]; if(!n) return;
+      BULK.forEach(f=>{ if(f in set) n[f]=set[f]; });
+      if('hiring' in set){ n.hiring=set.hiring?(/yes/i.test(n.hiring)?n.hiring:'Yes'):''; if(set.hiring&&!n.person) n.person='Vacant'; } }));
+  }
+  const n=S.doc.nodes[S.sel]; if(dlg.returnValue!=='ok'||!n) return;
+  const v={title:form.title.value.trim()};
+  if(n.type!=='team'){
+    const hire=form.hiring.checked;
+    Object.assign(v,{person:form.person.value.trim()||(hire?'Vacant':''),loc:form.loc.value.trim(),notes:form.notes.value.trim(),start:form.start.value,end:form.end.value,tags:tagList(form.tags.value).join('; '),hiring:hire?(/yes/i.test(n.hiring)?n.hiring:'Yes'):''});
+  }
+  if(Object.keys(v).every(k=>v[k]===(n[k]||''))) return;
+  commit(()=>Object.assign(S.doc.nodes[n.id],v));
+});
+function addNode(type){
+  if(!S.sel&&S.doc.roots.length) return;
+  const pid=S.sel||''; let id;
+  commit(()=>{ id=add(S.doc,pid,type,takenIds()); S.collapsed.delete(pid); setSel([id]); });
+  openEdit();
+}
+const cdlg=$('#cdlg'); let onOk=null;
+function ask(title,msg,ok,fn){ $('#ch').textContent=title; $('#cmsg').textContent=msg; $('#cok').textContent=ok; onOk=fn; cdlg.returnValue=''; cdlg.showModal(); }
+cdlg.addEventListener('close',()=>{ const fn=onOk; onOk=null; if(cdlg.returnValue==='ok'&&fn) fn(); });
+function delSel(){
+  if(isMulti()){ const ids=selIds().filter(id=>S.doc.nodes[id]), t=ids.filter(id=>S.doc.nodes[id].type==='team').length, k=ids.length-t;
+    const what=[k&&k+' seat'+(k>1?'s':''),t&&t+' team'+(t>1?'s':'')].filter(Boolean).join(' and ');
+    return ask(`Delete ${what}?`,`The ${what} will be removed from the chart. Anyone reporting to them moves up a level. You can undo this.`,'Delete',
+      ()=>commit(()=>{ ids.forEach(id=>{ if(S.doc.nodes[id]) remove(S.doc,id); }); setSel([]); })); }
+  const n=S.doc.nodes[S.sel]; if(!n) return;
+  const team=n.type==='team', name=team?(n.title||'This team'):(n.person||n.title||'This seat'), k=n.kids.length, up=S.doc.nodes[n.sup];
+  const where=up?'to '+(up.type==='team'?up.title:up.person||up.title):'to the top level';
+  ask(team?'Delete team?':'Delete seat?',`${name} will be removed from the chart.`+(k?` Its ${k} direct ${team?'member':'report'}${k>1?'s':''} will move up ${where}.`:'')+' You can undo this.','Delete',
+    ()=>commit(()=>{ remove(S.doc,n.id); setSel([]); }));
+}
+function sortSel(key){
+  const n=S.doc.nodes[S.sel]; if(!n||!key) return;
+  // A person without reports stands for the group they sit in.
+  const pid=n.type==='team'||n.kids.length?n.id:n.sup;
+  commit(()=>sortKids(S.doc,pid,key,false));
+}
+$('#undo').onclick=()=>step(S.undo,S.redo);
+$('#redo').onclick=()=>step(S.redo,S.undo);
+$('#addseat').onclick=()=>addNode('seat');
+$('#addteam').onclick=()=>addNode('team');
+// Opens the dialog straight after, so the new seat can be named (or the new team renamed).
+function convertSel(){
+  const n=S.doc.nodes[S.sel]; if(!n||isMulti()) return;
+  commit(()=>{ convert(S.doc,n.id);
+    // Skills belong to a person; drop them once the ID is a person on none of the charts.
+    if(!allDocs().some(d=>d.nodes[n.id]&&d.nodes[n.id].type!=='team')) S.skills.rows=S.skills.rows.filter(r=>r.id!==n.id); });
+  openEdit();
+}
+$('#convert').onclick=convertSel;
+$('#edit').onclick=openEdit;
+$('#del').onclick=delSel;
+$('#sortsel').onchange=e=>{ const k=e.target.value; e.target.value=''; sortSel(k); };
+document.querySelectorAll('[data-sortall]').forEach(b=>b.onclick=()=>commit(()=>sortKids(S.doc,'',b.dataset.sortall,true)));
+$('#collapse').onclick=()=>{
+  if(S.view==='logical') S.doc.xf.teams.forEach(t=>S.collapsed.add('xt:'+t.name));
+  else Object.values(S.doc.nodes).forEach(n=>{ if(n.type==='team') S.collapsed.add(n.id); });
+  renderChart(); applyView(); };
+$('#expand').onclick=()=>{ S.collapsed.clear(); renderChart(); applyView(); };
+$('#help').onclick=()=>$('#hint').classList.toggle('hidden');
+document.querySelectorAll('[data-show]').forEach(c=>{ c.checked=SHOW[c.dataset.show];
+  c.onchange=()=>{ SHOW[c.dataset.show]=c.checked; try{ localStorage.setItem(SHOW_KEY,JSON.stringify(SHOW)); }catch(e){} if(S.doc){ renderChart(); applyView(); } }; });
+
+/* ---------- menus ---------- */
+const closePops=except=>document.querySelectorAll('.pop').forEach(p=>{ if(p!==except) p.classList.add('hidden'); });
+document.querySelectorAll('[data-pop]').forEach(b=>b.onclick=()=>{ const p=$('#'+b.dataset.pop); closePops(p); p.classList.toggle('hidden'); });
+document.addEventListener('pointerdown',e=>{ if(!e.target.closest('.menu-wrap')) closePops(); });
+document.querySelectorAll('.pop .mi').forEach(b=>b.addEventListener('click',()=>closePops()));
+$('#zin').onclick=()=>zoomMid(1.25); $('#zout').onclick=()=>zoomMid(.8); $('#zfit').onclick=()=>fit();
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&drag) return cancelDrag();
+  if(e.key==='Escape') closePops();
+  if(e.key==='Control'&&drag){ setCopy(true); return updateDrag(drag.cx,drag.cy); }
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'&&S.doc){ e.preventDefault(); saveBook(e.shiftKey); return; }
+  if(!S.doc||dlg.open||cdlg.open||sdlg.open||xdlg.open||fdlg.open||$('#ndlg').open||$('#scdlg').open||/^(input|select|textarea)$/i.test(e.target.tagName)) return;
+  const mod=e.ctrlKey||e.metaKey, k=e.key.toLowerCase();
+  if(mod&&k==='z'){ e.preventDefault(); e.shiftKey?step(S.redo,S.undo):step(S.undo,S.redo); }
+  else if(mod&&k==='y'){ e.preventDefault(); step(S.redo,S.undo); }
+  else if(mod&&k==='a'&&S.tab==='chart'){ e.preventDefault(); selectAll(); }
+  else if(mod||S.tab!=='chart') return;
+  else if(k==='escape'){ if(S.sel) select(null); }
+  else if(k==='delete'||k==='backspace') delSel();
+  else if(k==='enter'||k==='f2'){ if(S.sel){ e.preventDefault(); openEdit(); } }
+  else if(k==='+'||k==='=') zoomMid(1.25);
+  else if(k==='-') zoomMid(.8);
+  else if(k==='0') fit();
+  else if(k.startsWith('arrow')){ e.preventDefault(); const s=80; V.x+=k==='arrowleft'?s:k==='arrowright'?-s:0; V.y+=k==='arrowup'?s:k==='arrowdown'?-s:0; applyView(); }
+});
+
+document.addEventListener('keyup',e=>{ if(e.key==='Control'&&drag){ setCopy(false); updateDrag(drag.cx,drag.cy); } });
+
+/* ---------- headcount ---------- */
+function tbl(head,rows){
+  const h='<tr>'+head.map(c=>`<th class="${c.num?'num':''}">${esc(c.label)}</th>`).join('')+'</tr>';
+  const b=rows.map(r=>`<tr class="${r.total?'total':''}">`+head.map(c=>{
+    const v=r.cells[c.key]; const z=c.num&&(v===0||v==null);
+    return `<td class="${c.num?'num':''}${z?' dim':''}">${z?'·':(v??'')}</td>`;}).join('')+'</tr>').join('');
+  return `<div class="tbl"><table>${h}${b}</table></div>`;
+}
+const cleanTitle=n=>esc(n.title.replace(/\s*\((?:[^)]*(?:leav|start|finish|reloc|moving|new)[^)]*)\)\s*/i,' ').replace(/\s+/g,' ').trim());
+const statusTags=n=>[n.vacant&&'<span class="tag vac">Vacant</span>',n.endTag&&`<span class="tag gap">${esc(n.endTag)}</span>`,n.startTag&&`<span class="tag nz">${esc(n.startTag)}</span>`,n.moving&&`<span class="tag move">${esc(n.moveNote)}</span>`].filter(Boolean).join(' ');
+
+
+function renderHead(){
+  S.headDirty=false;
+  const P=S.D.people, {roles}=S.colors;
+  const streams=[];const sMap={};
+  P.forEach(n=>{ if(!sMap[n.stream]){sMap[n.stream]={name:n.stream,people:[]};streams.push(sMap[n.stream]);} sMap[n.stream].people.push(n); });
+  const hasTeams=s=>s.people.some(n=>n.team!==NO_TEAM);
+  streams.sort((a,b)=>(a.people.some(n=>n.aboveStreams)-b.people.some(n=>n.aboveStreams))||(hasTeams(b)-hasTeams(a))||b.people.length-a.people.length);
+
+  const vac=P.filter(n=>n.vacant), gaps=P.filter(n=>!n.vacant&&n.leaving), moves=P.filter(n=>n.moving);
+  const locCount={};P.filter(n=>!n.vacant&&n.loc).forEach(n=>{locCount[n.loc]=(locCount[n.loc]||0)+1;});
+  const locs=Object.keys(locCount).sort((a,b)=>locCount[b]-locCount[a]||a.localeCompare(b));
+  $('#kpis').innerHTML=[[P.length,'people'],[streams.filter(hasTeams).length,'streams'],[Object.values(S.doc.nodes).filter(n=>n.type==='team').length,'teams'],[vac.length,'vacant'],[gaps.length,'upcoming gaps'],...locs.map(l=>[locCount[l],l])]
+    .map(([n,l])=>`<div><b>${n}</b><span>${esc(l)}</span></div>`).join('');
+
+  const max=Math.max(1,...streams.map(s=>s.people.length));
+  $('#bars').innerHTML=streams.map(s=>{
+    // Segments are role groups, in the same colours as the chart.
+    const counts={};s.people.forEach(n=>{counts[n.family]=(counts[n.family]||0)+1;});
+    const segs=FAMS.filter(f=>counts[f.k]).map(f=>`<span class="fam-${f.k}" style="width:${counts[f.k]/max*100}%;background:var(--fc)" title="${f.label}: ${counts[f.k]}"></span>`).join('');
+    return `<div class="bar-row"><div class="lbl">${esc(s.name)}</div><div class="hbar">${segs}</div><div class="n">${s.people.length}</div></div>`;
+  }).join('');
+  $('#legend').innerHTML=FAMS.filter(f=>P.some(n=>n.family===f.k)).map(f=>`<span class="fam-${f.k}"><i style="background:var(--fc)"></i>${f.label}</span>`).join('');
+
+  // sizes by stream
+  $('#sizes-body').innerHTML=streams.map(s=>{
+    if(!hasTeams(s)){
+      const c={};s.people.forEach(n=>{c[n.roleName]=(c[n.roleName]||0)+1;});
+      return `<h3>${esc(s.name)} — ${s.people.length}</h3>`+tbl([{key:'r',label:'Role'},{key:'n',label:'Count',num:true}],roles.filter(r=>c[r]).map(r=>({cells:{r:esc(r),n:c[r]}})));
+    }
+    const cols=roles.filter(k=>s.people.some(n=>n.roleName===k));
+    const teams={};s.people.forEach(n=>{(teams[n.team]=teams[n.team]||[]).push(n);});
+    const names=Object.keys(teams).sort((a,b)=>(a===NO_TEAM)-(b===NO_TEAM)||teams[b].length-teams[a].length);
+    const rows=names.map(t=>{const cells={team:esc(t)};cols.forEach(k=>cells[k]=teams[t].filter(n=>n.roleName===k).length);cells.total=teams[t].length;return{cells};});
+    const tot={team:'Total'};cols.forEach(k=>tot[k]=s.people.filter(n=>n.roleName===k).length);tot.total=s.people.length;rows.push({cells:tot,total:true});
+    return `<h3>${esc(s.name)} — ${s.people.length}</h3>`+tbl([{key:'team',label:'Team'},...cols.map(k=>({key:k,label:k,num:true})),{key:'total',label:'Total',num:true}],rows);
+  }).join('')+(()=>{const c={};P.forEach(n=>{c[n.roleName]=(c[n.roleName]||0)+1;});const rows=roles.map(r=>({cells:{r:esc(r),n:c[r]}}));rows.push({cells:{r:'Total',n:P.length},total:true});
+    return `<h3>Organisation total — ${P.length}</h3>`+tbl([{key:'r',label:'Role'},{key:'n',label:'Count',num:true}],rows);})();
+
+  renderXHead();
+
+  // vacancies & gaps
+  $('#vac-body').innerHTML=vac.length?tbl([{key:'i',label:'#',num:true},{key:'r',label:'Role'},{key:'t',label:'Team'},{key:'s',label:'Stream'}],
+    vac.map((n,i)=>({cells:{i:i+1,r:cleanTitle(n),t:esc(n.team),s:esc(n.stream)}}))):'<p class="note">No roles are flagged as vacant.</p>';
+  $('#gap-body').innerHTML=gaps.length?tbl([{key:'r',label:'Role'},{key:'p',label:'Name'},{key:'t',label:'Team'},{key:'s',label:'Stream'},{key:'n',label:'Note'}],
+    gaps.map(n=>({cells:{r:cleanTitle(n),p:esc(n.person),t:esc(n.team),s:esc(n.stream),n:statusTags(n)}}))):'<p class="note">No one is flagged as leaving or finishing.</p>';
+
+  renderPeople();
+
+  // moves
+  $('#move-body').innerHTML=moves.length?tbl([{key:'r',label:'Role'},{key:'p',label:'Name'},{key:'t',label:'Team'},{key:'s',label:'Stream'},{key:'n',label:'Note'}],
+    moves.map(n=>({cells:{r:cleanTitle(n),p:esc(n.person),t:esc(n.team),s:esc(n.stream),n:`<span class="tag move">${esc(n.moveNote)}</span>`}}))):'<p class="note">No one is flagged as relocating.</p>';
+}
+// Cross-functional teams as a matrix: each team's people and FTE, and how much of that FTE comes from each stream.
+// Then who is over-allocated, and how many people are in no team.
+function renderXHead(){
+  const x=S.doc.xf, info=S.D.info, P=S.D.people;
+  $('#xsec').classList.toggle('hidden',!x.teams.length); if(!x.teams.length) return;
+  const by={}; x.rows.forEach(r=>{ if(info[r.id]) (by[r.team]=by[r.team]||[]).push(r); });
+  const isP=r=>!info[r.id].vacant, sum=rs=>rs.reduce((s,r)=>s+r.pct,0)/100, f=v=>v?fmtFte(v):0;
+  const used=new Set(x.rows.filter(r=>info[r.id]&&isP(r)).map(r=>info[r.id].stream)), streams=[...new Set(P.map(p=>p.stream))].filter(s=>used.has(s));
+  const grp=x.teams.some(t=>t.group);
+  const row=(label,group,ms)=>{ const ppl=ms.filter(isP), c={team:label,grp:group,ppl:new Set(ppl.map(r=>r.id)).size,fte:f(sum(ppl)),open:ms.length-ppl.length};
+    streams.forEach(s=>{ c['s:'+s]=f(sum(ppl.filter(r=>info[r.id].stream===s))); }); return c; };
+  const rows=x.teams.map(t=>({cells:row(esc(t.name),esc(t.group),by[t.name]||[])}));
+  rows.push({cells:row('Total','',x.rows.filter(r=>info[r.id])),total:true});
+  const over=P.filter(p=>p.alloc>100), none=P.filter(p=>!p.vacant&&!p.xf.length), part=P.filter(p=>!p.vacant&&p.alloc>0&&p.alloc<100);
+  $('#x-body').innerHTML=tbl([{key:'team',label:'Team'},...(grp?[{key:'grp',label:'Group'}]:[]),{key:'ppl',label:'People',num:true},{key:'fte',label:'FTE',num:true},{key:'open',label:'Open seats',num:true},...streams.map(s=>({key:'s:'+s,label:s,num:true}))],rows)+
+    `<p class="note">${none.length} ${none.length===1?'person is':'people are'} in no cross-functional team${part.length?`; ${part.length} ${part.length===1?'has':'have'} part of their time unallocated`:''}.</p>`+
+    (over.length?'<h3>Over-allocated</h3>'+tbl([{key:'p',label:'Name'},{key:'t',label:'Title'},{key:'a',label:'Allocated',num:true},{key:'x',label:'Teams'}],
+      over.map(p=>({cells:{p:esc(p.person),t:cleanTitle(p),a:p.alloc+'%',x:p.xf.map(r=>`${esc(r.team)} ${r.pct}%`).join(', ')}}))):'');
+}
+const PS={key:'',dir:1};
+const PCOLS=[['person','Name',p=>p.person],['title','Title',p=>p.title],['loc','Location',p=>p.loc],['stream','Stream',p=>p.stream],['team','Team',p=>p.team],['xteam','Cross-functional',p=>p.xf.map(r=>r.team).join(', ')],['start','Starts',p=>p.startISO],['end','Ends',p=>p.endISO],['tags','Tags',p=>p.tags.join(', ')],
+  ['status','Status',p=>[p.vacant&&'Vacant',p.leaving&&'Leaving',p.starting&&'Starting',p.moving&&'Relocating'].filter(Boolean).join(' ')]];
+function renderPeople(){
+  const base=peopleBase(), P=base.filter(hlMatch), unit=base.some(p=>p.vacant)?'seats':'people';
+  const dflt=(a,b)=>a.stream.localeCompare(b.stream)||a.team.localeCompare(b.team)||a.roleName.localeCompare(b.roleName)||a.person.localeCompare(b.person);
+  const col=PCOLS.find(c=>c[0]===PS.key);
+  P.sort(col?(a,b)=>PS.dir*col[2](a).localeCompare(col[2](b))||dflt(a,b):dflt);
+  $('#pcount').textContent=P.length===base.length?`${base.length} ${unit}`:`${P.length} of ${base.length} ${unit}`;
+  $('#loc-body').innerHTML=P.length?'<div class="tbl"><table class="ptable"><tr>'+
+    PCOLS.map(([k,l])=>`<th><button data-sort="${k}" title="Sort by ${l.toLowerCase()}">${l}${PS.key===k?(PS.dir>0?' ▲':' ▼'):''}</button></th>`).join('')+'<th></th></tr>'+
+    P.map(n=>`<tr class="${n.endTag?'leaver':n.startTag?'starter':''}" data-edit="${esc(n.id)}" title="Click to edit"><td>${esc(n.person)}</td><td>${cleanTitle(n)}</td><td>${n.loc?`<span class="tag nz">${esc(n.loc)}</span>`:''}</td><td>${esc(n.stream)}</td><td>${esc(n.team)}</td><td>${n.xf.map(r=>esc(r.team)+(r.pct!==100?` <span class="tag ${n.alloc>100?'gap':'move'}">${r.pct}%</span>`:'')).join(', ')}${n.alloc>100&&n.xf.every(r=>r.pct===100)?' <span class="tag gap">'+n.alloc+'%</span>':''}</td><td class="d">${fmtDate(n.startISO)}</td><td class="d">${fmtDate(n.endISO)}</td><td>${n.tags.map(t=>tagChip(t)).join(' ')}</td><td>${statusTags(n)}</td><td class="go"><button class="tb" data-go="${esc(n.id)}" title="Show this person on the chart">Chart</button></td></tr>`).join('')+
+    '</table></div>':'<p class="note">Nobody matches. Remove a filter, or clear them all.</p>';
+}
+// Column headers cycle ascending, descending, then back to the default order. A row opens that person for editing,
+// in the same dialog as the chart; its Chart button jumps to them on the chart.
+$('#loc-body').addEventListener('click',e=>{
+  const h=e.target.closest('[data-sort]'), r=e.target.closest('[data-go]'), ed=e.target.closest('[data-edit]');
+  if(h){ const k=h.dataset.sort; if(PS.key!==k){ PS.key=k; PS.dir=1; } else if(PS.dir===1) PS.dir=-1; else PS.key=''; renderPeople(); }
+  else if(r) focusNode(r.dataset.go);
+  else if(ed&&S.doc.nodes[ed.dataset.edit]){ setSel([ed.dataset.edit]); openEdit(); }
+});
+function focusNode(id){
+  if(!S.doc.nodes[id]) return;
+  for(let a=S.doc.nodes[id].sup;a;a=S.doc.nodes[a].sup) S.collapsed.delete(a);
+  S.collapsed.delete('xt:'); S.doc.xf.rows.forEach(r=>{ if(r.id===id){ S.collapsed.delete('xt:'+r.team); const t=xfTeam(S.doc.xf,r.team); if(t) S.collapsed.delete('xg:'+t.group); } });
+  setTab('chart'); renderChart(); if(V.k<.8) V.k=.8; applyView();
+  const c=cv.querySelector(`[data-id="${CSS.escape(id)}"]`); if(!c) return select(id);
+  const r=c.getBoundingClientRect(), v=vp.getBoundingClientRect();
+  V.x+=v.left+v.width/2-(r.left+r.width/2); V.y+=v.top+v.height/2-(r.top+r.height/2); applyView(); select(id);
+}
+
+/* ---------- skills grid ---------- */
+// Skills down the side, streams or teams across. "After leavers" counts holders with no end date.
+function renderSkills(){
+  const P=S.D.people.filter(p=>!p.vacant), mode=$('#skcols').value, key=mode==='team'?'team':'stream', G=S.skills.groups;
+  const only=$('#skrisk').checked, heat=n=>n?` style="background:color-mix(in srgb,var(--marine) ${Math.min(55,12+n*7)}%,transparent)"`:'';
+  // "People in one team" turns the grid into tick boxes: one column per person, click to give or take a skill.
+  const where=p=>p.team===NO_TEAM?p.stream+' · no team':p.team+' ('+p.stream+')', pick=$('#skteam');
+  if(mode==='people'){ const opts=[...new Set(P.map(where))], cur=opts.includes(pick.value)?pick.value:opts[0];
+    pick.innerHTML=opts.map(o=>`<option${o===cur?' selected':''}>${esc(o)}</option>`).join(''); }
+  pick.classList.toggle('hidden',mode!=='people');
+  const people=mode==='people'?P.filter(p=>where(p)===pick.value):[], cols=mode==='people'?people.map(p=>p.person):[...new Set(P.map(p=>p[key]))];
+  let risky=0, body='';
+  skillGroups().forEach(g=>{
+    let rows='';
+    Object.keys(G).filter(k=>G[k]===g).forEach(k=>{
+      const hold=P.filter(p=>p.skills.includes(k)), n=hold.length, after=hold.filter(stays).length;
+      const risk=n&&after===0?'<span class="tag gap">Lost after leavers</span>':n&&after===1?`<span class="tag vac">${n>1?'1 left after leavers':'1 person'}</span>`:n?'':'<span class="tag loc">Nobody</span>';
+      if(n&&after<2) risky++; else if(only) return;
+      rows+=`<tr><td class="sk"><button class="lnk" data-edit="${esc(k)}" title="Rename, regroup or delete this skill">${esc(k)}</button></td><td class="n c${n?'':' z'}" data-skill="${esc(k)}" title="Highlight on the chart">${n||'·'}</td><td class="n">${n?after:'·'}</td><td>${risk}</td>`+
+        (mode==='people'?people.map(p=>{ const on=p.skills.includes(k); return `<td class="c tgl${on?' on':' z'}" data-skill="${esc(k)}" data-pid="${esc(p.id)}" title="${esc(p.person)}: ${on?'remove':'add'} ${esc(k)}">${on?'✓':'·'}</td>`; })
+          :cols.map(c=>{ const m=hold.filter(p=>p[key]===c).length; return `<td class="c${m?'':' z'}" data-skill="${esc(k)}" data-col="${esc(c)}" title="${esc(k)} in ${esc(c)}: highlight on the chart"${heat(m)}>${m||'·'}</td>`; })).join('')+'</tr>';
+    });
+    if(rows) body+=`<tr class="grp"><td colspan="${4+cols.length}">${esc(g)}</td></tr>`+rows;
+  });
+  $('#sknote').textContent=`${Object.keys(G).length} skills · ${risky} at risk`+(mode==='people'?' · click a cell to tick or untick':'')+(S.SK.missing.length?` · ${S.SK.missing.length} PersonIDs with skills are not on the chart`:'');
+  $('#skills-body').innerHTML=body?'<div class="tbl"><table class="sgrid"><tr><th>Skill</th><th class="n">People</th><th class="n">After leavers</th><th>Risk</th>'+
+    cols.map(c=>`<th class="c">${esc(c)}</th>`).join('')+'</tr>'+body+'</table></div>'
+    :`<p class="note">${Object.keys(G).length?'No skills are at risk.':'No skills yet. Use “+ Skill” to add one, or open a skills file from the ⋯ menu.'}</p>`;
+}
+$('#skcols').onchange=$('#skrisk').onchange=$('#skteam').onchange=()=>renderSkills();
+$('#skadd').onclick=()=>openSkillDlg(null,null);
+// A skill name opens it for editing. A person's cell ticks or unticks. Any other count jumps to the chart with that skill
+// highlighted, narrowed to the column's stream or team.
+$('#skills-body').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-edit]'), td=e.target.closest('td[data-skill]');
+  if(ed) return openSkillDlg(ed.dataset.edit,null);
+  if(!td) return;
+  if(td.dataset.pid) return commit(()=>setSkill(S.skills,td.dataset.pid,td.dataset.skill,!td.classList.contains('on')));
+  F.q=F.rawq=''; F.all=false; DIMS.forEach(([k])=>F.sel[k].clear());
+  F.sel.skill.add(td.dataset.skill); if(td.dataset.col) F.sel[$('#skcols').value==='team'?'team':'stream'].add(td.dataset.col);
+  setTab('chart'); filtersChanged(); fit();
+});
+
+/* ---------- writing .xlsx: the same zip of XML, stored uncompressed ---------- */
+// sheets: [{name, head, rows (arrays of strings), num (indexes of columns written as numbers)}]
+function writeXlsx(sheets){
+  const x=v=>String(v).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g,'');
+  const col=i=>{ let n=''; for(i++;i>0;i=Math.floor((i-1)/26)) n=String.fromCharCode(65+(i-1)%26)+n; return n; };
+  const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>', M='http://schemas.openxmlformats.org/spreadsheetml/2006/main', R='http://schemas.openxmlformats.org/officeDocument/2006/relationships', P='http://schemas.openxmlformats.org/package/2006';
+  const sheet=(sh,i)=>{
+    const num=new Set(sh.num||[]), line=(vals,r,st)=>`<row r="${r}">`+vals.map((v,c)=>v===''?'':num.has(c)&&r>1&&/^\d{1,15}$/.test(v)?`<c r="${col(c)}${r}"${st}><v>${v}</v></c>`:`<c r="${col(c)}${r}"${st} t="inlineStr"><is><t xml:space="preserve">${x(v)}</t></is></c>`).join('')+'</row>';
+    const w=sh.head.map((h,c)=>Math.min(48,Math.max(9,h.length+3,...sh.rows.map(r=>String(r[c]).length+2))));
+    return X+`<worksheet xmlns="${M}"><sheetViews><sheetView workbookViewId="0"${i?'':' tabSelected="1"'}><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>`+
+      `<cols>${w.map((n,c)=>`<col min="${c+1}" max="${c+1}" width="${n}" customWidth="1"/>`).join('')}</cols><sheetData>${line(sh.head,1,' s="1"')}${sh.rows.map((r,k)=>line(r,k+2,'')).join('')}</sheetData>`+
+      `<autoFilter ref="A1:${col(sh.head.length-1)}${sh.rows.length+1}"/></worksheet>`;
+  };
+  const files=[
+    ['[Content_Types].xml',X+`<Types xmlns="${P}/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`],
+    ['_rels/.rels',X+`<Relationships xmlns="${P}/relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ['xl/workbook.xml',X+`<workbook xmlns="${M}" xmlns:r="${R}"><sheets>${sheets.map((sh,i)=>`<sheet name="${x(sh.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets></workbook>`],
+    ['xl/_rels/workbook.xml.rels',X+`<Relationships xmlns="${P}/relationships">${sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${R}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length+1}" Type="${R}/styles" Target="styles.xml"/></Relationships>`],
+    ['xl/styles.xml',X+`<styleSheet xmlns="${M}"><fonts count="2"><font><sz val="10"/><name val="Arial"/></font><font><b/><sz val="10"/><name val="Arial"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs></styleSheet>`],
+    ...sheets.map((sh,i)=>['xl/worksheets/sheet'+(i+1)+'.xml',sheet(sh,i)])];
+  const enc=new TextEncoder(), table=Array.from({length:256},(_,n)=>{ for(let k=0;k<8;k++) n=n&1?0xEDB88320^(n>>>1):n>>>1; return n>>>0; });
+  const crc=b=>{ let c=~0; for(const v of b) c=table[(c^v)&255]^(c>>>8); return ~c>>>0; };
+  const parts=[], dir=[]; let at=0;
+  const rec=(fields,tail)=>{ const b=new Uint8Array(fields.reduce((n,[,size])=>n+size,0)+tail.length), dv=new DataView(b.buffer); let o=0;
+    fields.forEach(([v,size])=>{ size===4?dv.setUint32(o,v,true):dv.setUint16(o,v,true); o+=size; }); b.set(tail,o); return b; };
+  files.forEach(([name,text])=>{
+    const nm=enc.encode(name), data=enc.encode(text), c=crc(data), common=[[20,2],[0x0800,2],[0,2],[0,2],[0x21,2],[c,4],[data.length,4],[data.length,4],[nm.length,2],[0,2]];
+    parts.push(rec([[0x04034b50,4],...common],nm),data);
+    dir.push(rec([[0x02014b50,4],[20,2],...common,[0,2],[0,2],[0,2],[0,4],[at,4]],nm));
+    at+=30+nm.length+data.length;
+  });
+  const size=dir.reduce((n,b)=>n+b.length,0);
+  return new Blob([...parts,...dir,rec([[0x06054b50,4],[0,2],[0,2],[files.length,2],[files.length,2],[size,4],[at,4],[0,2]],new Uint8Array(0))],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+/* ---------- reading .xlsx: a zip of XML files, unpacked with the browser's own inflate ---------- */
+async function readXlsx(buf){
+  const u=new Uint8Array(buf), dv=new DataView(buf), dec=new TextDecoder(); let e=u.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50) e--;
+  if(e<0) throw new Error('not an Excel workbook');
+  const files={}; let o=dv.getUint32(e+16,true);
+  for(let i=dv.getUint16(e+10,true);i>0;i--){
+    const method=dv.getUint16(o+10,true), size=dv.getUint32(o+20,true), nl=dv.getUint16(o+28,true), at=dv.getUint32(o+42,true);
+    const start=at+30+dv.getUint16(at+26,true)+dv.getUint16(at+28,true);
+    files[dec.decode(u.subarray(o+46,o+46+nl))]={method,data:u.subarray(start,start+size)};
+    o+=46+nl+dv.getUint16(o+30,true)+dv.getUint16(o+32,true);
+  }
+  const xml=async name=>{ const f=files[name]; let t='<x/>';
+    if(f) t=f.method?await new Response(new Blob([f.data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).text():dec.decode(f.data);
+    return new DOMParser().parseFromString(t,'application/xml'); };
+  const tx=el=>[...el.getElementsByTagName('t')].map(t=>t.textContent).join('');
+  const shared=[...(await xml('xl/sharedStrings.xml')).getElementsByTagName('si')].map(tx), rels={};
+  [...(await xml('xl/_rels/workbook.xml.rels')).getElementsByTagName('Relationship')].forEach(r=>{ rels[r.getAttribute('Id')]=r.getAttribute('Target').replace(/^\/?(xl\/)?/,'xl/'); });
+  const out=[];
+  for(const sh of (await xml('xl/workbook.xml')).getElementsByTagName('sheet')){
+    const grid=[];
+    for(const row of (await xml(rels[sh.getAttribute('r:id')])).getElementsByTagName('row')){
+      const cells=[];
+      for(const c of row.getElementsByTagName('c')){
+        let ci=0; for(const ch of c.getAttribute('r').replace(/\d+/g,'')) ci=ci*26+ch.charCodeAt(0)-64;
+        const t=c.getAttribute('t'), v=c.getElementsByTagName('v')[0];
+        cells[ci-1]=t==='s'?shared[+v.textContent]:t==='inlineStr'?tx(c):v?v.textContent:'';
+      }
+      grid.push(cells);
+    }
+    const head=Array.from(grid.shift()||[],h=>String(h??'').trim());
+    out.push({name:sh.getAttribute('name'),head,rows:grid.filter(r=>r.some(x=>String(x??'').trim())).map(r=>Object.fromEntries(head.map((h,i)=>[h,String(r[i]??'').trim()])))});
+  }
+  return out;
+}
+
+/* ---------- scenario menu ---------- */
+function renderScen(){
+  const P=S.plan, cur=P.cur, nm=esc(scName());
+  $('#scbtn').textContent=scName()+' ▾'; $('#scbtn').classList.toggle('on',cur>0);
+  $('#scpop').innerHTML='<div class="mlabel">Show</div>'+
+    P.list.map((s,i)=>`<button class="mi opt${i===cur?' on':''}" data-sc="${i}"><span class="ck">✓</span><span class="ol">${esc(s.name)}</span>${i?'':'<b>as it is</b>'}</button>`).join('')+
+    `<hr><button class="mi" data-scact="new">New scenario from ${nm}…</button>`+
+    (cur?`<button class="mi" data-scact="rename">Rename ${nm}…</button><button class="mi" data-scact="promote">Make ${nm} the baseline…</button><button class="mi danger" data-scact="del">Delete ${nm}…</button>`:'')+
+    (P.list.length>1?'<hr><button class="mi" data-scact="compare">Compare scenarios</button>':'');
+  $('#tabcmp').classList.toggle('hidden',P.list.length<2);
+  $('#scstrip').classList.toggle('hidden',!cur); $('#scname').textContent=scName();
+}
+function switchTo(i){
+  if(i===S.plan.cur||!S.plan.list[i]) return;
+  S.plan.cur=i; refresh(); if(S.tab==='chart') applyView();
+}
+const cleanName=v=>v.replace(/[\[\]:*?\/\\]/g,'-').replace(/\s+/g,' ').trim().replace(/^'+|'+$/g,'').slice(0,SCN_MAX);
+const nameTaken=(v,skip)=>v.toLowerCase()===BASE.toLowerCase()||S.plan.list.some((s,i)=>i!==skip&&s.name.toLowerCase()===v.toLowerCase());
+function freeName(stem){
+  if(stem) { for(let i=1;;i++){ const v=i>1?stem+' '+i:stem; if(!nameTaken(v)) return v; } }
+  for(let c=65;c<91;c++){ const v='Option '+String.fromCharCode(c); if(!nameTaken(v)) return v; }
+  return freeName('Scenario');
+}
+// Resolves to the cleaned name, or null if cancelled. skip is the scenario being renamed, so it may keep its own name.
+const scdlg=$('#scdlg'), scform=$('#scform');
+function askName(title,note,value,skip){
+  const f=scform.sname, check=()=>{ const v=cleanName(f.value); f.setCustomValidity(!v?'Give it a name':nameTaken(v,skip)?'There is already one with this name':''); };
+  $('#sch').textContent=title; $('#scnote').textContent=note; f.value=value; f.oninput=check; check();
+  scdlg.returnValue=''; scdlg.showModal(); f.select();
+  return new Promise(done=>scdlg.addEventListener('close',()=>done(scdlg.returnValue==='ok'?cleanName(f.value):null),{once:true}));
+}
+async function scAction(act){
+  const i=S.plan.cur, nm=scName();
+  if(act==='new'){
+    const name=await askName('New scenario',`It starts as a copy of ${i?nm:'the baseline'}. Changes you make in it leave the baseline as it is.`,freeName(),-1);
+    if(name) commit(()=>{ S.plan.list.push({name,doc:structuredClone(S.doc)}); S.plan.cur=S.plan.list.length-1; });
+  }
+  else if(act==='rename'){ const name=await askName('Rename scenario','',nm,i); if(name&&name!==nm) commit(()=>{ S.plan.list[i].name=name; }); }
+  else if(act==='promote'){ const prev=freeName('Previous baseline');
+    ask(`Make ${nm} the baseline?`,`${nm} becomes the chart as it is, and the other scenarios are compared with it. The current baseline is kept as a scenario called ${prev}, so nothing is lost. You can undo this.`,'Make baseline',
+      ()=>commit(()=>{ const L=S.plan.list, s=L[i], old=L[0];
+        s.doc.orig=old.doc.orig; s.doc.xf.orig=old.doc.xf.orig; s.doc.name=old.doc.name; old.name=prev; s.name=BASE;
+        L.splice(i,1); L.unshift(s); S.plan.cur=0; })); }
+  else if(act==='del') ask(`Delete ${nm}?`,`The scenario and its changes will be removed. The baseline and any other scenarios stay as they are. You can undo this.`,'Delete',
+    ()=>commit(()=>{ S.plan.list.splice(i,1); S.plan.cur=0; }));
+  else if(act==='compare') setTab('compare');
+}
+$('#scpop').addEventListener('click',e=>{
+  const b=e.target.closest('[data-sc],[data-scact]'); if(!b) return; closePops();
+  if(b.dataset.sc) switchTo(+b.dataset.sc); else scAction(b.dataset.scact);
+});
+$('#scback').onclick=()=>switchTo(0);
+$('#scdiff').onclick=()=>{ S.showDiff=!S.showDiff; renderChart(); updateBar(); };
+
+/* ---------- compare two scenarios ---------- */
+// Teams are matched by ID, so a renamed team still lines up with itself. A seat counts for the nearest team above it.
+const CMP={a:BASE,b:''};
+function cmpStats(doc){
+  const D=derive(doc), N=doc.nodes, by={}, teamOf={}, boss={}, teams={}, reports={};
+  S.skills.rows.forEach(r=>{ (by[r.id]=by[r.id]||[]).push(r.skill); });
+  walk(doc,n=>{ const up=N[n.sup]; teamOf[n.id]=up?(up.type==='team'?up.id:teamOf[up.id]):''; boss[n.id]=up?(up.type==='team'?boss[up.id]:up.id):''; });
+  const T=id=>teams[id]||(teams[id]={id,name:id?N[id].title||'(unnamed team)':'Not in a team',people:[],vacant:0,skills:{}});
+  walk(doc,n=>{ if(n.type==='team') T(n.id); });
+  D.people.forEach(p=>{ p.skills=by[p.id]||[]; const t=T(teamOf[p.id]);
+    if(p.vacant) t.vacant++; else { t.people.push(p); p.skills.forEach(k=>{ t.skills[k]=(t.skills[k]||0)+1; }); } });
+  const pk=n=>n.kids.flatMap(k=>N[k].type==='team'?pk(N[k]):[N[k]]);
+  Object.values(N).forEach(n=>{ if(n.type!=='team') reports[n.id]=pk(n).length; });
+  return {doc,D,teamOf,boss,teams,reports};
+}
+function renderCompare(){
+  const L=S.plan.list, get=n=>L.find(s=>s.name===n);
+  if(!get(CMP.a)) CMP.a=BASE;
+  if(!get(CMP.b)||CMP.b===CMP.a) CMP.b=(L.find(s=>s.name!==CMP.a&&s.name===scName())||L.find(s=>s.name!==CMP.a)||{}).name;
+  const opts=v=>L.map(s=>`<option${s.name===v?' selected':''}>${esc(s.name)}</option>`).join('');
+  $('#cmpa').innerHTML=opts(CMP.a); $('#cmpb').innerHTML=opts(CMP.b);
+  if(!CMP.b) return;
+  const A=cmpStats(get(CMP.a).doc), B=cmpStats(get(CMP.b).doc), NA=A.doc.nodes, NB=B.doc.nodes;
+  const seat=n=>n&&n.type!=='team', ids=[...new Set([...Object.keys(NA),...Object.keys(NB)])];
+  const moved=ids.filter(id=>seat(NA[id])&&seat(NB[id])&&NA[id].sup!==NB[id].sup);
+  const added=ids.filter(id=>seat(NB[id])&&!NA[id]), removed=ids.filter(id=>seat(NA[id])&&!NB[id]);
+  const ab=(a,b)=>a===b?String(b):`${a} → ${b}`;
+  const who=n=>`${esc(n.person||'(no name)')}<span class="sub3">${esc(n.title)}</span>`;
+  const where=(X,id)=>{ const N=X.doc.nodes, t=X.teamOf[id], b=X.boss[id];
+    return `${esc(t?N[t].title||'(unnamed team)':'Not in a team')}<span class="sub3">${b?'under '+esc(N[b].person||N[b].title):'top level'}</span>`; };
+  const table=(head,rows,num)=>`<div class="tbl"><table class="ctable"><tr>${head.map((h,i)=>`<th class="${(num||[]).includes(i)?'num':''}">${h}</th>`).join('')}</tr>`+
+    rows.map(r=>`<tr${r.go?` data-go="${esc(r.go)}" data-in="${r.in}" title="Show on the chart"`:''}>${r.cells.map((c,i)=>`<td class="${(num||[]).includes(i)?'num':''}">${c}</td>`).join('')}</tr>`).join('')+'</table></div>';
+  const count=X=>{ const p=X.D.people; return {ppl:p.filter(x=>!x.vacant).length,vac:p.filter(x=>x.vacant).length,teams:Object.values(X.doc.nodes).filter(n=>n.type==='team').length}; };
+  const ca=count(A), cb=count(B);
+  let html=`<div class="kpis">`+[[ab(ca.ppl,cb.ppl),'people'],[ab(ca.vac,cb.vac),'open seats'],[ab(ca.teams,cb.teams),'teams'],[moved.length,'moved'],[added.length,'seats added'],[removed.length,'seats removed']]
+    .map(([n,l])=>`<div><b>${n}</b><span>${l}</span></div>`).join('')+'</div>';
+
+  // Teams, in the order they appear on the second chart, then teams only the first has, then people outside any team.
+  const order=[]; walk(B.doc,n=>{ if(n.type==='team') order.push(n.id); }); walk(A.doc,n=>{ if(n.type==='team'&&!NB[n.id]) order.push(n.id); }); order.push('');
+  const all=$('#cmpall').checked, names=ps=>ps.map(p=>esc(p.person||p.title)).join(', ');
+  const trows=[]; let same=0, diff=0;
+  [...new Set(order)].forEach(id=>{ const ta=A.teams[id], tb=B.teams[id]; if(!ta&&!tb) return;
+    const pa=ta?ta.people:[], pb=tb?tb.people:[], ina=new Set(pa.map(p=>p.id)), inb=new Set(pb.map(p=>p.id));
+    const join=pb.filter(p=>!ina.has(p.id)), leave=pa.filter(p=>!inb.has(p.id)), sa=ta?ta.skills:{}, sb=tb?tb.skills:{};
+    const va=ta?ta.vacant:0, vb=tb?tb.vacant:0, rename=ta&&tb&&ta.name!==tb.name;
+    const sk=[...new Set([...Object.keys(sa),...Object.keys(sb)])].sort((x,y)=>x.localeCompare(y)), tags=[];
+    sk.forEach(k=>{ const a=sa[k]||0, b=sb[k]||0;
+      if(a&&!b) tags.push(`<span class="tag gap" title="Held by ${a} here before, nobody after">Loses ${esc(k)}</span>`);
+      else if(a>=2&&b===1) tags.push(`<span class="tag vac" title="Held by ${a} here before, 1 after">${esc(k)}: 1 left</span>`);
+      else if(!a&&b) tags.push(`<span class="tag nz">Gains ${esc(k)}</span>`); });
+    const changed=!ta||!tb||rename||join.length||leave.length||va!==vb;
+    if(changed) diff++; else { same++; if(!all) return; }
+    const label=(!ta?'<span class="tag nz">New</span> ':!tb?'<span class="tag gap">Removed</span> ':'')+(rename?`${esc(ta.name)} → ${esc(tb.name)}`:esc((tb||ta).name));
+    trows.push({go:id,in:tb?'b':'a',cells:[label,ab(pa.length,pb.length),ab(va,vb),ab(pa.filter(stays).length,pb.filter(stays).length),join.length?names(join):'',leave.length?names(leave):'',tags.join('')]});
+  });
+  if(!diff&&!moved.length&&!added.length&&!removed.length&&!xfChanges(A.doc.xf,xfSig(B.doc.xf))) html+='<p class="note">These two are the same.</p>';
+  html+=`<section><h2>Teams</h2><p class="note">Seats count for the nearest team above them. Staying leaves out anyone with an end date. Skill changes compare how many people in the team hold each skill.${same&&!all?` ${same} team${same>1?'s are':' is'} unchanged and not shown.`:''}</p>`+
+    (trows.length?table(['Team','People','Open seats','Staying','Joining','Leaving','Skills'],trows,[1,2,3]):'<p class="note">No team changes.</p>')+'</section>';
+
+  // Cross-functional teams, matched by name: members, FTE, who joins and leaves, and allocation changes.
+  const xa=A.doc.xf, xb=B.doc.xf;
+  if(xa.teams.length||xb.teams.length){
+    const mem=(X,t)=>X.doc.xf.rows.filter(r=>r.team===t&&X.doc.nodes[r.id]), real=(X,rs)=>rs.filter(r=>!isVacant(X.doc.nodes[r.id]));
+    const fte=(X,rs)=>fmtFte(real(X,rs).reduce((s,r)=>s+r.pct,0)/100), nm=(X,r)=>esc(X.doc.nodes[r.id].person||X.doc.nodes[r.id].title);
+    const xrows=[]; let xsame=0;
+    [...new Set([...xb.teams.map(t=>t.name),...xa.teams.map(t=>t.name)])].forEach(t=>{
+      const ta=xfTeam(xa,t), tb=xfTeam(xb,t), ra=mem(A,t), rb=mem(B,t), was=id=>ra.find(o=>o.id===id);
+      const join=rb.filter(r=>!was(r.id)), leave=ra.filter(r=>!rb.some(o=>o.id===r.id)), pct=rb.filter(r=>was(r.id)&&was(r.id).pct!==r.pct);
+      if(ta&&tb&&!join.length&&!leave.length&&!pct.length){ xsame++; if(!all) return; }
+      xrows.push({cells:[(!ta?'<span class="tag nz">New</span> ':!tb?'<span class="tag gap">Removed</span> ':'')+esc(t),ab(real(A,ra).length,real(B,rb).length),ab(fte(A,ra),fte(B,rb)),
+        join.map(r=>nm(B,r)).join(', '),leave.map(r=>nm(A,r)).join(', '),pct.map(r=>`${nm(B,r)} ${was(r.id).pct}% → ${r.pct}%`).join(', ')]});
+    });
+    html+=`<section><h2>Cross-functional teams</h2><p class="note">Teams are matched by name. FTE adds up each member's allocation, leaving out open seats.${xsame&&!all?` ${xsame} team${xsame>1?'s are':' is'} unchanged and not shown.`:''}</p>`+
+      (xrows.length?table(['Team','People','FTE','Joining','Leaving','Allocation'],xrows,[1,2]):'<p class="note">No cross-functional team changes.</p>')+'</section>';
+  }
+  const byWhere=(X,list)=>list.sort((x,y)=>(X.doc.nodes[X.teamOf[x]]||{title:''}).title.localeCompare((X.doc.nodes[X.teamOf[y]]||{title:''}).title)||(X.doc.nodes[x].person||'').localeCompare(X.doc.nodes[y].person||''));
+  if(moved.length) html+=`<section><h2>Moves</h2>`+table(['Person','From','To'],byWhere(B,moved).map(id=>({go:id,in:'b',cells:[who(NB[id]),where(A,id),where(B,id)]})))+'</section>';
+  if(added.length||removed.length) html+=`<section><h2>Seats added or removed</h2>`+table(['Seat','Where',''],
+    [...byWhere(B,added).map(id=>({go:id,in:'b',cells:[who(NB[id]),where(B,id),'<span class="tag nz">Added</span>']})),
+     ...byWhere(A,removed).map(id=>({go:id,in:'a',cells:[who(NA[id]),where(A,id),'<span class="tag gap">Removed</span>']}))])+'</section>';
+  const leads=ids.filter(id=>seat(NA[id])&&seat(NB[id])&&(A.reports[id]||B.reports[id])&&A.reports[id]!==B.reports[id]);
+  if(leads.length) html+=`<section><h2>Managers</h2><p class="note">People reporting to each manager directly, or through a team under them.</p>`+
+    table(['Manager','Team','Reports'],byWhere(B,leads).map(id=>({go:id,in:'b',cells:[who(NB[id]),where(B,id),ab(A.reports[id],B.reports[id])]})),[2])+'</section>';
+  $('#cmp-body').innerHTML=html;
+}
+$('#cmpa').onchange=e=>{ CMP.a=e.target.value; if(CMP.b===CMP.a) CMP.b=''; renderCompare(); };
+$('#cmpb').onchange=e=>{ CMP.b=e.target.value; if(CMP.b===CMP.a) CMP.a=CMP.a===BASE?S.plan.list.find(s=>s.name!==CMP.b).name:BASE; renderCompare(); };
+$('#cmpswap').onclick=()=>{ [CMP.a,CMP.b]=[CMP.b,CMP.a]; renderCompare(); };
+$('#cmpall').onchange=()=>renderCompare();
+// A row opens that seat or team on the chart it belongs to: the second chart, or the first for something only it has.
+$('#cmp-body').addEventListener('click',e=>{
+  const r=e.target.closest('[data-go]'); if(!r||!r.dataset.go) return;
+  const i=S.plan.list.findIndex(s=>s.name===CMP[r.dataset.in]); if(i<0) return;
+  switchTo(i); focusNode(r.dataset.go);
+});
+
+/* ---------- tabs, load, export ---------- */
+function setTab(tab){
+  S.tab=tab;
+  document.querySelectorAll('.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  const chart=tab==='chart'&&!!S.doc;
+  document.body.classList.toggle('chart-mode',chart);
+  $('#chartview').classList.toggle('hidden',tab!=='chart'); $('#tools').classList.toggle('hidden',tab!=='chart'); $('#hlstrip').classList.toggle('hidden',tab!=='chart'||!hlActive());
+  $('#out').classList.toggle('hidden',tab!=='head'); $('#people').classList.toggle('hidden',tab!=='people'); $('#skills').classList.toggle('hidden',tab!=='skills'); $('#compare').classList.toggle('hidden',tab!=='compare');
+  if(tab!=='chart'&&S.headDirty) renderHead(); else if(tab==='people') renderPeople();
+  if(tab==='skills') renderSkills();
+  if(tab==='compare') renderCompare();
+  if(chart) applyView();
+}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+// scens: the scenarios that come with the chart, [{name, doc}]; cur: which one to show.
+function setDoc(doc,scens,cur){
+  S.plan={cur:cur||0,list:[{name:BASE,doc},...(scens||[])]}; S.doc=S.plan.list[S.plan.cur].doc; S.undo=[]; S.redo=[]; S.base=0; setSel([]); S.collapsed=new Set(); S.editSk=false; S.handle=null;
+  if(!S.skills) S.skills=blankSkills();
+  ['#app','#tabs','#scwrap','#status','#morewrap','#exportwrap'].forEach(s=>$(s).classList.remove('hidden')); ['#drop','#pick','#droperr','#dropnote'].forEach(s=>$(s).classList.add('hidden'));
+  setTab('chart'); refresh(); fit(true);
+}
+const SKSTORE=STORE+'.skills';
+function setSkills(sk){
+  S.skills=sk;
+  if(S.doc) refresh(); else try{ localStorage.setItem(SKSTORE,JSON.stringify(sk)); }catch(e){}
+}
+// A saved workbook, a Miro CSV and a skills file can be picked or dropped in any combination; the headers say which is which.
+const isOrgHead=head=>{ const k=head.map(headKey); return k.includes('personid')&&k.includes('supervisorid'); };
+// The cross-functional sheets: found by name, or failing that by their columns.
+const XT_SHEET='Cross-functional teams', XM_SHEET='Cross-functional members';
+const isXMembersHead=head=>{ const k=head.map(headKey); return k.includes('personid')&&k.includes('team')&&!k.includes('supervisorid')&&!k.includes('skill'); };
+const isXTeamsHead=head=>{ const k=head.map(headKey); return k.includes('team')&&(k.includes('group')||k.includes('purpose'))&&!k.includes('personid')&&!k.includes('skill'); };
+async function readFile(file){
+  if(/\.xlsx$/i.test(file.name)){
+    // The Org sheet is the baseline; each "Scenario - name" sheet with the same columns is a scenario.
+    const sheets=await readXlsx(await file.arrayBuffer()), orgs=sheets.filter(t=>isOrgHead(t.head)), isScn=t=>t.name.startsWith(SCN_PREFIX);
+    const org=orgs.find(t=>/^org$/i.test(t.name))||orgs.find(t=>!isScn(t))||orgs[0];
+    const table=sheets.find(t=>/^skills$/i.test(t.name)&&isSkillsHead(t.head))||sheets.find(t=>isSkillsHead(t.head));
+    if(!org&&!table) throw new Error('no sheet has the org chart columns (PersonID, SupervisorID) or the skills columns (PersonID, Skill)');
+    const named=(nm,ok)=>sheets.find(t=>t.name.toLowerCase()===nm.toLowerCase()&&ok(t.head))||sheets.find(t=>ok(t.head));
+    return {kind:org?'chart':'skills',org,scens:orgs.filter(t=>t!==org&&isScn(t)),table,xt:named(XT_SHEET,isXTeamsHead),xm:named(XM_SHEET,isXMembersHead),list:sheets.find(t=>t!==table&&t!==org&&t.head.some(h=>headKey(h)==='skill')&&!t.head.some(h=>headKey(h)==='personid'))};
+  }
+  const text=await file.text(), table=parseCSV(text);
+  return isSkillsHead(table.head)?{kind:'skills',table}:{kind:'chart',text};
+}
+// entries: [{file, handle}]. handle is the browser's link back to the file on disk, when it gave us one; it is what
+// lets Save overwrite the workbook that was opened.
+async function loadFiles(entries){
+  const files=entries.map(e=>e.file), handleOf=new Map(entries.map(e=>[e.file,e.handle||null]));
+  const got=[], errs=[];
+  for(const file of files){ try{ got.push({file,...await readFile(file)}); }catch(e){ errs.push(file.name+': '+e.message); } }
+  got.sort((a,b)=>(a.kind==='skills')-(b.kind==='skills'));
+  for(const g of got){
+    try{
+      if(g.kind==='skills') setSkills(toSkills(g.table,g.file.name,g.list));
+      else if(g.org){ const doc=tableToDoc(g.org,g.file.name), scens=g.scens.map(t=>({name:t.name.slice(SCN_PREFIX.length),doc:tableToDoc(t,g.file.name)}));   // a workbook is the whole picture
+        if(g.xt||g.xm) toXF(g.xt,g.xm,[{name:BASE,doc},...scens]);
+        S.skills=g.table?toSkills(g.table,g.file.name,g.list):blankSkills(); setDoc(doc,scens); S.handle=handleOf.get(g.file); }
+      else setDoc(toDoc(g.text,g.file.name));                                                                                              // a Miro CSV replaces the chart and keeps the skills
+    }catch(e){ errs.push(g.file.name+': '+e.message+(g.kind==='chart'&&!g.org?'. Check it is the Miro org-chart CSV export':'')); }
+  }
+  const sk=got.some(g=>g.table)&&S.skills, miss=S.doc&&sk?S.SK.missing:[];
+  if(errs.length){ const msg='Could not read '+errs.join('; ')+'.';
+    if(S.doc) ask('Could not load that file',msg,'OK',null); else { $('#droperr').textContent=msg; $('#droperr').classList.remove('hidden'); } }
+  else if(miss.length) ask('Skills loaded',`${S.skills.rows.length} skill rows read. ${miss.length} PersonID${miss.length>1?'s are':' is'} not on the chart, so ${miss.length>1?'their':'its'} rows are not shown and will not be saved: ${miss.join(', ')}.`,'OK',null);
+  if(sk&&!S.doc){ $('#dropnote').textContent=`Skills loaded from ${S.skills.name} (${S.skills.rows.length} rows). Now add the org-chart CSV.`; $('#dropnote').classList.remove('hidden'); }
+}
+// Chrome and Edge can open files in a way that allows saving back to them; elsewhere the plain file input is used.
+async function pickFiles(){
+  if(window.showOpenFilePicker){
+    try{
+      const hs=await showOpenFilePicker({multiple:true,types:[{description:'Workbook, Miro CSV or skills file',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx'],'text/csv':['.csv']}}]});
+      return loadFiles(await Promise.all(hs.map(async handle=>({file:await handle.getFile(),handle}))));
+    }catch(e){ if(e.name==='AbortError') return; }
+  }
+  $('#file').click();
+}
+$('#pick').onclick=$('#pick2').onclick=pickFiles;
+$('#rmskills').onclick=()=>ask('Remove all skills?','Every skill and who holds it will be removed. You can undo this.','Remove',()=>commit(()=>{ S.skills=blankSkills(); F.sel.skill.clear(); }));
+$('#file').onchange=e=>{ if(e.target.files.length) loadFiles([...e.target.files].map(file=>({file}))); e.target.value=''; };
+function download(name,blob){
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+const baseName=()=>baseDoc().name.replace(/\.(csv|xlsx)$/i,'');
+// The workbook is the master copy: Org (the baseline: names under Name, titles under Job Title), one sheet per scenario,
+// Skills and Skill list. Saving resets the baseline's change count and its moved / new badges; it does not change what
+// the scenarios are compared with.
+// Writes a file where the user chooses. Chrome and Edge show the system Save dialog and hand back a handle, so the next
+// save can go straight to the same file; other browsers get a name prompt and a normal download.
+// Resolves to {name, handle}, or null if the user cancelled.
+// quiet skips the name prompt in browsers without the Save dialog (Firefox, Safari): the file is downloaded under its
+// current name, and the browser's own "ask where to save" setting decides whether a dialog appears.
+async function saveTo(blob,suggest,ext,label,handle,quiet){
+  if(window.showSaveFilePicker){
+    try{
+      const h=handle||await showSaveFilePicker({suggestedName:suggest,types:[{description:label,accept:{[blob.type.split(';')[0]]:[ext]}}]});
+      const w=await h.createWritable(); await w.write(blob); await w.close();
+      return {name:h.name,handle:h};
+    }catch(e){
+      if(e.name==='AbortError') return null;
+      if(handle) return saveTo(blob,suggest,ext,label,null,quiet);   // the remembered file is gone or no longer writable: ask again
+    }
+  }
+  if(quiet){ download(suggest,blob); return {name:suggest,handle:null}; }
+  const nd=$('#ndlg'), nf=$('#nform');
+  nf.fname.value=suggest; nd.returnValue=''; nd.showModal(); nf.fname.setSelectionRange(0,suggest.length-ext.length);
+  const ok=await new Promise(done=>nd.addEventListener('close',()=>done(nd.returnValue==='ok'),{once:true}));
+  let name=nf.fname.value.trim().replace(/[\\/:*?"<>|]/g,'-'); if(!ok||!name) return null;
+  if(!name.toLowerCase().endsWith(ext)) name+=ext;
+  download(name,blob); return {name,handle:null};
+}
+async function saveBook(asNew){
+  const d=baseDoc(), sk=skillsTables(allDocs(),S.skills), xt=xfTables(S.plan.list), anyX=xt.teams.rows.length>0;
+  const sheet=(name,doc)=>{ const t=orgTable(doc,doc.swapped); return {name,...t,num:[t.head.indexOf(doc.cols.id),t.head.indexOf(doc.cols.sup)]}; };
+  const blob=writeXlsx([sheet('Org',d),...S.plan.list.slice(1).map(s=>sheet(SCN_PREFIX+s.name,s.doc)),{name:'Skills',...sk.skills,num:[0]},{name:'Skill list',...sk.list},
+    ...(anyX?[{name:XT_SHEET,...xt.teams},{name:XM_SHEET,...xt.members,num:[1,5]}]:[])]);
+  const to=await saveTo(blob,baseName()+'.xlsx','.xlsx','Excel workbook',asNew?null:S.handle,!asNew);
+  if(!to||!S.doc||baseDoc()!==d) return;
+  S.handle=to.handle; d.name=to.name; d.orig={}; Object.values(d.nodes).forEach(n=>{ d.orig[n.id]={sup:n.sup,sig:sig(n)}; });
+  const on=new Set(sk.skills.rows.map(r=>r[0])); S.skills.rows=S.skills.rows.filter(r=>on.has(r.id)); S.skills.orig=skillSig(S.skills); S.base=S.undo.length;
+  d.xf.orig=xfSig(d.xf);
+  refresh();
+}
+$('#export').onclick=()=>saveBook(false);
+$('#saveas').onclick=()=>saveBook(true);
+$('#exmiro').onclick=()=>saveTo(new Blob([toCSV(S.doc,!S.doc.swapped)],{type:'text/csv;charset=utf-8'}),baseName()+(inScenario()?' - '+scName():'')+' for Miro.csv','.csv','CSV for Miro',null);
+$('#clear').onclick=()=>S.undo.length?ask('Clear the chart?','Changes that have not been saved will be lost.','Clear',clearDoc):clearDoc();
+function clearDoc(){
+  try{ localStorage.removeItem(STORE); localStorage.removeItem(SKSTORE); }catch(e){}
+  S.plan=S.doc=S.skills=null; F.sel.skill.clear(); document.body.classList.remove('chart-mode');
+  ['#app','#tabs','#scwrap','#status','#tools','#morewrap','#exportwrap'].forEach(s=>$(s).classList.add('hidden')); ['#drop','#pick'].forEach(s=>$(s).classList.remove('hidden'));
+}
+const dropEl=$('#drop');
+['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();dropEl.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();dropEl.classList.remove('over');}));
+document.addEventListener('drop',e=>{
+  const files=[...e.dataTransfer.files]; if(!files.length) return;
+  // The handles have to be asked for now, while the drop event is still live.
+  const hs=[...e.dataTransfer.items].filter(i=>i.kind==='file').map(i=>i.getAsFileSystemHandle?i.getAsFileSystemHandle().catch(()=>null):null);
+  Promise.all(hs).then(h=>loadFiles(files.map((file,i)=>({file,handle:h[i]&&h[i].kind==='file'?h[i]:null}))));
+});
+window.addEventListener('resize',()=>{ if(S.doc&&S.tab==='chart') applyView(); });
+
+// Work in progress is kept in this browser until Clear, so a refresh does not lose it.
+try{ const sk=JSON.parse(localStorage.getItem(SKSTORE)||'null'); if(sk&&sk.rows){ if(!sk.orig) sk.orig=skillSig(sk); S.skills=sk; } }catch(e){}
+// Older sessions kept a single chart rather than a plan.
+try{ const saved=JSON.parse(localStorage.getItem(STORE)||'null'), list=saved&&(saved.list||(saved.nodes&&saved.roots?[{name:BASE,doc:saved}]:null));
+  if(list&&list.length){ list.forEach(({doc:d})=>{
+    if(!d.cols.tags){ d.cols.tags='Tags'; Object.values(d.orig).forEach(o=>{ o.sig+='\u0001'; }); }
+    if(!d.cols.start){ d.cols.start='Start Date'; d.cols.end='End Date'; Object.values(d.orig).forEach(o=>{ o.sig+='\u0001\u0001'; }); } });
+  setDoc(list[0].doc,list.slice(1),Math.min(saved.cur||0,list.length-1)); } }catch(e){}
+})();
+</script>
+</body>
+</html>
