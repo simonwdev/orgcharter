@@ -12,7 +12,7 @@
   --marine:#1C5C86; --marine-soft:#DCE9F2; --amber:#B8730F; --amber-soft:#FBEBD1;
   --fern:#2B7A58; --fern-soft:#DCEFE5; --rose:#A8364B; --rose-soft:#F7DDE1;
   /* Role families, kept clear of the status colours: amber open seat, green starting, red leaving. */
-  --f-lead:#172129; --f-dev:#2F6DB5; --f-test:#7451B8; --f-po:#B03A82; --f-pm:#7D2860; --f-ux:#1F8585; --f-arch:#5B6B7A; --f-other:#9FAEB8;
+  --f-lead:#172129; --f-dev:#2F6DB5; --f-test:#7451B8; --f-po:#B03A82; --f-pm:#7D2860; --f-tpa:#6B7A2A; --f-proj:#7A5C3E; --f-ux:#1F8585; --f-arch:#5B6B7A; --f-other:#9FAEB8;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
@@ -20,13 +20,13 @@
   --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
   --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
   --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
-  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-tpa:#C2CE7E; --f-proj:#CDAE8C; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
 }}
 :root[data-theme="dark"]{
   --paper:#161C21; --panel:#1F272E; --ink:#E6ECF0; --ink-2:#9FAEB8; --rule:#34414A; --line:#5A6B76; --team:#1A2228;
   --marine:#7FB6DD; --marine-soft:#243B4D; --amber:#E2A24C; --amber-soft:#4A3718;
   --fern:#7BC9A4; --fern-soft:#1E3D30; --rose:#E68CA0; --rose-soft:#4A2630;
-  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
+  --f-lead:#E6ECF0; --f-dev:#7FB0EC; --f-test:#B59BEA; --f-po:#E58BC4; --f-pm:#F4B9DD; --f-tpa:#C2CE7E; --f-proj:#CDAE8C; --f-ux:#6CC9C4; --f-arch:#A3B1BE; --f-other:#5A6B76;
 }
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
@@ -189,7 +189,7 @@ body.famspot .card.hit{box-shadow:0 0 0 3px var(--role)}   /* spotlighting a rol
 #rolekey .rkedit{font:inherit;font-size:.78rem;border:0;background:none;color:var(--ink-2);cursor:pointer;padding:.1rem .4rem}
 #rolekey .rkedit:hover{color:var(--marine)}
 @media (max-width:700px){ #rolekey{max-width:calc(100% - 24px);bottom:56px} }
-.fam-lead{--fc:var(--f-lead)} .fam-dev{--fc:var(--f-dev)} .fam-test{--fc:var(--f-test)} .fam-po{--fc:var(--f-po)} .fam-pm{--fc:var(--f-pm)} .fam-ux{--fc:var(--f-ux)} .fam-arch{--fc:var(--f-arch)} .fam-other{--fc:var(--f-other)}
+.fam-lead{--fc:var(--f-lead)} .fam-dev{--fc:var(--f-dev)} .fam-test{--fc:var(--f-test)} .fam-po{--fc:var(--f-po)} .fam-pm{--fc:var(--f-pm)} .fam-tpa{--fc:var(--f-tpa)} .fam-proj{--fc:var(--f-proj)} .fam-ux{--fc:var(--f-ux)} .fam-arch{--fc:var(--f-arch)} .fam-other{--fc:var(--f-other)}
 #fdlg{width:min(40rem,94vw)}
 #fdlg .ftbl{max-height:42vh;overflow:auto;border:1px solid var(--rule);border-radius:6px;margin:.6rem 0 .2rem}
 #fdlg table{font-size:.86rem}
@@ -1025,11 +1025,13 @@ const SHOW_KEY=STORE+'.show', SHOW={title:true,badge:true,loc:true,tags:true,ski
 try{ Object.assign(SHOW,JSON.parse(localStorage.getItem(SHOW_KEY)||'{}')); }catch(e){}
 // Role groups: every role falls in one of a few groups, each with a fixed colour, so a colour means the same thing on
 // every chart. The group comes from words in the role (first match wins, so "Quality Lead" is a lead and "Test &
-// Automation Engineer" is test; a "Head of" or a product manager is not a lead), unless this browser has an override
+// Automation Engineer" is test; a "Head of", a product, project or program manager is not a lead), unless this browser has an override
 // for that role (View > Role groups).
 const FAMS=[
-  {k:'lead',label:'Lead',mono:'LEAD',re:/\b(lead|leader|head(?!\s+of\b)|director|chief|cto|cio|cpo|vp|(?<!product\s)manager|em(\s*\d+)?)\b/i},
+  {k:'lead',label:'Lead',mono:'LEAD',re:/\b(lead|leader|head(?!\s+of\b)|director|chief|cto|cio|cpo|vp|(?<!(product|project|program|programme)\s)manager|em(\s*\d+)?)\b/i},
   {k:'pm',label:'Product Manager',mono:'PM',re:/\bproduct managers?\b/i},
+  {k:'proj',label:'Project & Program Manager',mono:'PROJ',re:/\b(project|program|programme) managers?\b/i},
+  {k:'tpa',label:'Technical Product Analyst',mono:'TPA',re:/\btechnical product analy(st|sts|sis)\b/i},
   {k:'arch',label:'Architecture',mono:'ARCH',re:/architect/i},
   {k:'test',label:'Test',mono:'TEST',re:/\b(test\w*|qa|quality)\b/i},
   {k:'po',label:'Product',mono:'PO',re:/\b(product owner|business analyst|po|ba)\b/i},
